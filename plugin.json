@@ -1,0 +1,21 @@
+{
+  "name": "folder magician",
+  "version": "1.0.0",
+  "pluginName": "folder magician",
+  "description": "文件夹魔法师",
+  "main": "index.html",
+  "logo": "logo.png",
+  "preload": "preload.js",
+  "features": [
+    {
+      "code": "folder magician",
+      "explain": "文件夹魔法师",
+      "cmds": [
+        "fm"
+      ]
+    }
+  ],
+  "development": {
+    "main": "http://127.0.0.1:8080/index.html"
+  }
+}
