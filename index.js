@@ -120,8 +120,9 @@ function EventBinding($parent) {
 
   $container.find(".expand").click(function (event) {
     event.stopPropagation(); // 阻止事件冒泡
-    const path = decodeURIComponent($(this).attr("path"));
-    const $parent = $(`li[path='${path}']`);
+    const attrPath = $(this).attr("path");
+    const path = decodeURIComponent(attrPath);
+    const $parent = $(`li[path='${attrPath}']`);
     const $this = $(this);
     if ($this.text() === "+") {
       // 如果未展开
