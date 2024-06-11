@@ -5,7 +5,6 @@ utools.onPluginEnter(({ code, type, payload, option }) => {});
 utools
   .readCurrentFolderPath()
   .then((dir) => {
-    console.log(`root = ${dir}`);
     const name = getNameFromPath(dir);
     const children = getSubData(dir);
     const root = {
@@ -84,7 +83,6 @@ function generateList(data) {
         : "";
     result += `<li path="${path}">${expendTag} ${item.name}`;
     if (item.children) {
-      console.log(item);
       result += generateList(item.children);
     }
     result += "</li>";
@@ -105,7 +103,7 @@ function EventBinding($parent) {
   const $container = $parent || $("body");
   $container.find("li").click(function (event) {
     event.stopPropagation(); // 阻止事件冒泡
-    const path = $(this).attr("path");
+    const path = decodeURIComponent($(this).attr("path"));
     const selected = !!$(this).attr("selected");
     $(this).attr("selected", selected ? false : true);
     const target = $container.hasClass("INPUT")
@@ -122,12 +120,12 @@ function EventBinding($parent) {
 
   $container.find(".expand").click(function (event) {
     event.stopPropagation(); // 阻止事件冒泡
-    const path = $(this).attr("path");
+    const path = decodeURIComponent($(this).attr("path"));
     const $parent = $(`li[path='${path}']`);
     const $this = $(this);
     if ($this.text() === "+") {
       // 如果未展开
-      const children = getSubData(decodeURIComponent(path));
+      const children = getSubData(path);
       const subDom = generateList(children);
       $parent.append(subDom);
       EventBinding($parent);
@@ -140,7 +138,7 @@ function EventBinding($parent) {
   });
 }
 
-function inputFile() {
+function StaticDomBinding() {
   // 上传
   $(".DRAG").on("dragover", function (event) {
     event.preventDefault();
@@ -149,10 +147,7 @@ function inputFile() {
   $(".DRAG").on("drop", function (event) {
     event.preventDefault();
     const files = Array.from(event.originalEvent.dataTransfer.files);
-    files.forEach(({ name, path }) => {
-      INPUT.push({ name, path });
-    });
-
+    files.forEach((file) => INPUT.push(file));
     DomCreateing($(".INPUT"), INPUT);
   });
 
@@ -165,8 +160,7 @@ function inputFile() {
   // 移动
   $(".addToInput").on("click", function () {
     // 需要根据 path 创建 data Object
-    const items = outputSelect.map((o) => {
-      const path = decodeURIComponent(o);
+    const items = outputSelect.map((path) => {
       const name = getNameFromPath(path);
       return { path, name };
     });
@@ -183,4 +177,4 @@ function inputFile() {
   });
 }
 
-inputFile();
+StaticDomBinding();
