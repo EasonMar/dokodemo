@@ -158,7 +158,7 @@ function StaticDomBinding() {
     $(".INPUT").empty();
   });
 
-  // 移动
+  // 移动Output所选到Input
   $(".addToInput").on("click", function () {
     // 需要根据 path 创建 data Object
     const items = outputSelect.map((path) => {
@@ -171,10 +171,32 @@ function StaticDomBinding() {
     DomCreateing($(".INPUT"), INPUT);
   });
 
-  // 清空OutPut
+  // 清空OutPut所选
   $(".resetOutput").on("click", function () {
     outputSelect = [];
     $(".OUTPUT [selected]").attr("selected", false);
+  });
+
+  // 复制Input所选文件到Output所选目录
+  $(".copyToOutput").on("click", function () {
+    inputSelect.forEach((i) => {
+      const name = getNameFromPath(i);
+      outputSelect.forEach((o) => {
+        // 只有是目录的才执行...
+        if (window.isDir(o)) window.copyTo(i, o + seperator + name);
+      });
+    });
+  });
+
+  // 删除Input\Output中所选文件
+  $(".deleteSelected").on("click", function () {
+    // 获取不重复的所有所选路径
+    let arrayWithDuplicates = [...outputSelect, ...inputSelect];
+    let uniqueArray = Array.from(new Set(arrayWithDuplicates));
+    uniqueArray.forEach(window.deleteFile);
+    $("[selected]").remove();
+    outputSelect = [];
+    inputSelect = [];
   });
 }
 
