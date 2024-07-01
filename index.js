@@ -4,18 +4,9 @@ const seperator = utools.isWindows() ? "\\" : "/";
 utools.onPluginEnter(({ code, type, payload, option }) => {});
 utools
   .readCurrentFolderPath()
-  .then((dir) => {
-    const name = getNameFromPath(dir);
-    const children = getSubData(dir);
-    const root = {
-      root: true,
-      name,
-      path: dir,
-      children,
-    };
-
-    OUTPUT.push(root);
-
+  .then((path) => {
+    const name = getNameFromPath(path);
+    OUTPUT.push({ name, path });
     DomCreateing($(".OUTPUT"), OUTPUT);
   })
   .catch((err) => {
@@ -25,7 +16,6 @@ utools
 // Model - 数据结构
 // [
 //   {
-//     root :true,
 //     name: "demo",
 //     path: "C:\\demo",
 //     children: [
@@ -49,8 +39,8 @@ utools
 // DomCreateing($(".OUTPUT"), OUTPUT);
 
 var INPUT = [];
-var inputSelect = [];
 var OUTPUT = [];
+var inputSelect = [];
 var outputSelect = [];
 
 // Dom Creating ———— 遍历dir树 ———— 直接用 ElementUI 的树形控件吧
@@ -77,10 +67,9 @@ function generateList(data) {
   for (let item of data) {
     const isFolder = window.isDir(item.path);
     const path = encodeURIComponent(item.path);
-    const expendTag =
-      isFolder && !item.root // root目录不需要expand
-        ? `<span class="expand" path="${path}">+</span>`
-        : "";
+    const expendTag = isFolder
+      ? `<span class="expand" path="${path}">+</span>`
+      : "";
     result += `<li path="${path}">${expendTag} ${item.name}`;
     if (item.children) {
       result += generateList(item.children);
@@ -139,7 +128,7 @@ function EventBinding($parent) {
   });
 }
 
-function StaticDomBinding() {
+function staticDomEventBind() {
   // 上传
   $(".DRAG").on("dragover", function (event) {
     event.preventDefault();
@@ -148,8 +137,10 @@ function StaticDomBinding() {
   $(".DRAG").on("drop", function (event) {
     event.preventDefault();
     const files = Array.from(event.originalEvent.dataTransfer.files);
-    files.forEach((file) => INPUT.push(file));
-    DomCreateing($(".INPUT"), INPUT);
+    const target = $(this).hasClass("input") ? "INPUT" : "OUTPUT";
+
+    files.forEach((file) => window[target].push(file));
+    DomCreateing($("." + target), window[target]);
   });
 
   // 清空Input
@@ -188,16 +179,23 @@ function StaticDomBinding() {
     });
   });
 
+
+  // 虚拟删除 删除Input\Output中所选项的最外层文件夹...
+  $('.removeSelected').on('click', function(){
+    
+  })
+
+
   // 删除Input\Output中所选文件
   $(".deleteSelected").on("click", function () {
     // 获取不重复的所有所选路径
-    let arrayWithDuplicates = [...outputSelect, ...inputSelect];
-    let uniqueArray = Array.from(new Set(arrayWithDuplicates));
-    uniqueArray.forEach(window.deleteFile);
+    let origin = [...outputSelect, ...inputSelect];
+    let uniqueArr = Array.from(new Set(origin));
+    uniqueArr.forEach(window.deleteFile);
     $("[selected]").remove();
     outputSelect = [];
     inputSelect = [];
   });
 }
 
-StaticDomBinding();
+staticDomEventBind();

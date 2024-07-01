@@ -20,11 +20,8 @@ body {
 }
 
 body {
-  display: flex;
-  align-items: center;
   height: 100%;
   width: 100%;
-  margin: 0;
 }
 
 .main {
@@ -72,4 +69,13 @@ li[selected] {
 
 .INPUT li[selected] {
   background-color: red;
+}
+
+.actor{
+  min-width: 124px;
+}
+
+button {
+  display: block;
+  margin-bottom: 10px;
 }
