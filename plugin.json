@@ -1,17 +1,17 @@
 {
-  "name": "folder magician",
+  "name": "dokodemo door",
   "version": "1.0.0",
-  "pluginName": "folder magician",
-  "description": "文件夹魔法师",
+  "pluginName": "dokodemo door",
+  "description": "文件任意门",
   "main": "index.html",
   "logo": "logo.png",
   "preload": "preload.js",
   "features": [
     {
-      "code": "folder magician",
-      "explain": "文件夹魔法师",
+      "code": "dokodemo door",
+      "explain": "文件任意门",
       "cmds": [
-        "fm"
+        "dd"
       ]
     }
   ],
