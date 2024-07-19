@@ -160,7 +160,7 @@ function staticDomEventBind() {
     });
     INPUT.push(...items);
     outputSelect = [];
-    $(".OUTPUT [selected]").attr("selected", false);
+    $(".OUTPUT .selected").removeClass("selected");
     DomCreateing($(".INPUT"), INPUT);
   });
 
@@ -190,7 +190,7 @@ function staticDomEventBind() {
     let origin = [...outputSelect, ...inputSelect];
     let uniqueArr = Array.from(new Set(origin));
     uniqueArr.forEach(window.deleteFile);
-    $("[selected]").remove();
+    $(".selected").remove();
     outputSelect = [];
     inputSelect = [];
   });
