@@ -113,19 +113,19 @@ function EventBinding($parent) {
     event.stopPropagation(); // 阻止事件冒泡
     const attrPath = $(this).attr("path");
     const path = decodeURIComponent(attrPath);
-    const $parent = $(`li[path='${attrPath}']`);
+    const $parentLi = $(`.item[path='${attrPath}']`).parent();
     const $this = $(this);
     if ($this.text() === "+") {
       // 如果未展开
       const children = getSubData(path);
-      const subDom = generateList(children);
-      $parent.append(subDom);
-      EventBinding($parent);
+      const $sub = $(generateList(children));
+      $parentLi.append($sub);
+      EventBinding($sub);
       $this.text("-");
     } else {
       // 收起
       $this.text("+");
-      $parent.find("ul").remove();
+      $parentLi.find("ul").remove();
     }
   });
 }
@@ -181,12 +181,8 @@ function staticDomEventBind() {
     });
   });
 
-
   // 虚拟删除 删除Input\Output中所选项的最外层文件夹...
-  $('.removeSelected').on('click', function(){
-    
-  })
-
+  $(".removeSelected").on("click", function () {});
 
   // 删除Input\Output中所选文件
   $(".deleteSelected").on("click", function () {
