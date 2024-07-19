@@ -70,11 +70,13 @@ function generateList(data) {
     const expendTag = isFolder
       ? `<span class="expand" path="${path}">+</span>`
       : "";
-    result += `<li path="${path}">${expendTag} ${item.name}`;
+    result += `<li ${
+      isFolder ? 'class="folder"' : '""'
+    }><div class="item" path="${path}">${expendTag} ${item.name}`;
     if (item.children) {
       result += generateList(item.children);
     }
-    result += "</li>";
+    result += "</div></li>";
   }
   result += "</ul>";
   return result;
@@ -90,11 +92,11 @@ function getNameFromPath(path) {
 // Event Binding
 function EventBinding($parent) {
   const $container = $parent || $("body");
-  $container.find("li").click(function (event) {
+  $container.find(".item").click(function (event) {
     event.stopPropagation(); // 阻止事件冒泡
     const path = decodeURIComponent($(this).attr("path"));
-    const selected = !!$(this).attr("selected");
-    $(this).attr("selected", selected ? false : true);
+    const selected = $(this).hasClass("selected");
+    $(this).toggleClass("selected");
     const target = $container.hasClass("INPUT")
       ? "inputSelect"
       : "outputSelect";
@@ -165,7 +167,7 @@ function staticDomEventBind() {
   // 清空OutPut所选
   $(".resetOutput").on("click", function () {
     outputSelect = [];
-    $(".OUTPUT [selected]").attr("selected", false);
+    $(".OUTPUT .selected").removeClass("selected");
   });
 
   // 复制Input所选文件到Output所选目录

@@ -3,9 +3,13 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="stylesheet" href="style.css" />
+  </head>
   <body>
-    <div class="main">
+    <div class="dragArea">
       <div class="DRAG input">Drag Input file into this area</div>
+      <div class="DRAG output">Drag Output folder into this area</div>
+    </div>
+    <div class="window">
       <div class="INPUT"></div>
       <div class="actor">
         <button class="emptyInput"><—— 清空Input</button>
@@ -15,10 +19,9 @@
         <button class="removeSelected">虚拟删除所选</button>
         <button class="deleteSelected">物理删除所选</button>
       </div>
-      <div class="DRAG output">Drag Output folder into this area</div>
       <div class="OUTPUT"></div>
     </div>
-    <script src="https://cdn.staticfile.net/jquery/3.7.1/jquery.min.js"></script>
-    <script src="index.js"></script>
   </body>
+  <script src="https://cdn.staticfile.net/jquery/3.7.1/jquery.min.js"></script>
+  <script src="index.js"></script>
 </html>
