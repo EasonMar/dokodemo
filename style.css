@@ -25,12 +25,28 @@ body {
 }
 
 .DRAG {
-  /* min-width: 200px; */
-  border: 1px dashed rgb(159, 159, 159);
+  width: 360px;
+  height: 60px;
+  border: 4px dashed rgb(159, 159, 159);
+  color: rgb(159, 159, 159);
   border-radius: 4px;
+  text-align: center;
+  line-height: 50px;
+  font-weight: bold;
 }
 
-.window {
+.window .actor {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 20px 10px;
+}
+.window .actor .inputBtn,
+.window .actor .outputBtn {
+  flex: 1;
+  text-align: center;
+}
+
+.window .display {
   display: flex;
   justify-content: space-around;
   align-items: flex-start;
@@ -41,7 +57,7 @@ body {
   min-width: 200px;
   min-height: 200px;
   flex: 1;
-  margin: 20px;
+  margin: 0 20px;
   border-radius: 4px;
   background-color: #d3d3d3;
   padding: 4px;
@@ -103,7 +119,6 @@ ul .item:hover {
   min-width: 124px;
 }
 
-button {
-  display: block;
-  margin-bottom: 10px;
+button:not(:last-child) {
+  margin-right: 10px;
 }

@@ -145,10 +145,30 @@ function staticDomEventBind() {
     DomCreateing($("." + target), window[target]);
   });
 
-  // 清空Input
-  $(".emptyInput").on("click", function () {
+  // 清空input
+  $(".inputBtn .empty").on("click", function () {
     INPUT = [];
     $(".INPUT").empty();
+  });
+  // 清空output
+  $(".outputBtn .empty").on("click", function () {
+    OUTPUT = [];
+    $(".OUTPUT").empty();
+  });
+
+  // 移出(虚拟删除)input中所选项的最外层目录...
+  $("inputBtn .remove").on("click", function () {});
+
+  // 撤销output所选
+  $(".outputBtn .reset").on("click", function () {
+    outputSelect = [];
+    $(".OUTPUT .selected").removeClass("selected");
+  });
+
+  // 撤销input所选
+  $(".inputBtn .reset").on("click", function () {
+    inputSelect = [];
+    $(".INPUT .selected").removeClass("selected");
   });
 
   // 移动Output所选到Input
@@ -164,12 +184,6 @@ function staticDomEventBind() {
     DomCreateing($(".INPUT"), INPUT);
   });
 
-  // 清空OutPut所选
-  $(".resetOutput").on("click", function () {
-    outputSelect = [];
-    $(".OUTPUT .selected").removeClass("selected");
-  });
-
   // 复制Input所选文件到Output所选目录
   $(".copyToOutput").on("click", function () {
     inputSelect.forEach((i) => {
@@ -180,9 +194,6 @@ function staticDomEventBind() {
       });
     });
   });
-
-  // 虚拟删除 删除Input\Output中所选项的最外层文件夹...
-  $(".removeSelected").on("click", function () {});
 
   // 删除Input\Output中所选文件
   $(".deleteSelected").on("click", function () {

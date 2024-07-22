@@ -6,20 +6,31 @@
   </head>
   <body>
     <div class="dragArea">
-      <div class="DRAG input">Drag Input file into this area</div>
-      <div class="DRAG output">Drag Output folder into this area</div>
+      <div class="DRAG input">Drop target file here</div>
+      <div class="DRAG output">Drop destination(folder) here</div>
     </div>
     <div class="window">
-      <div class="INPUT"></div>
       <div class="actor">
-        <button class="emptyInput"><—— 清空Input</button>
-        <button class="addToInput">添加到Input <——</button>
-        <button class="copyToOutput">复制到Output ——></button>
-        <button class="resetOutput">撤销Output所选 ——></button>
-        <button class="removeSelected">虚拟删除所选</button>
-        <button class="deleteSelected">物理删除所选</button>
+        <div class="inputBtn">
+          <button class="empty">清空</button>
+          <button class="reset">撤销</button>
+          <button class="remove">移出</button>
+          <button class="copyToOutput">复制到Output</button>
+        </div>
+        <div class="common">
+          <button class="deleteSelected">删除所选</button>
+        </div>
+
+        <div class="outputBtn">
+          <button class="empty">清空</button>
+          <button class="reset">撤销</button>
+          <button class="addToInput">添加到Input</button>
+        </div>
       </div>
-      <div class="OUTPUT"></div>
+      <div class="display">
+        <div class="INPUT"></div>
+        <div class="OUTPUT"></div>
+      </div>
     </div>
   </body>
   <script src="https://cdn.staticfile.net/jquery/3.7.1/jquery.min.js"></script>
