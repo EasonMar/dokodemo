@@ -1,3 +1,45 @@
+// 在index.js中添加
+function showError(message) {
+  // 创建错误提示元素
+  const errorElement = $('<div class="error-message"></div>').text(message);
+  // 添加到界面
+  $(".window").prepend(errorElement);
+  // 3秒后自动消失
+  setTimeout(() => {
+    errorElement.fadeOut(() => {
+      errorElement.remove();
+    });
+  }, 3000);
+}
+
+function showSuccess(message) {
+  // 创建成功提示元素
+  const successElement = $('<div class="success-message"></div>').text(message);
+  // 添加到界面
+  $(".window").prepend(successElement);
+  // 3秒后自动消失
+  setTimeout(() => {
+    successElement.fadeOut(() => {
+      successElement.remove();
+    });
+  }, 3000);
+}
+
+// 添加加载状态函数
+function showLoading(message) {
+  const loadingElement = $('<div class="loading-message"></div>').text(message);
+  $(".window").prepend(loadingElement);
+  return loadingElement;
+}
+
+function hideLoading(loadingElement) {
+  if (loadingElement) {
+    loadingElement.fadeOut(() => {
+      loadingElement.remove();
+    });
+  }
+}
+
 const seperator = utools.isWindows() ? "\\" : "/";
 
 // uTools API onPluginEnter(callback)
@@ -11,6 +53,7 @@ utools
   })
   .catch((err) => {
     console.log(err);
+    showError("获取当前目录失败: " + err.message);
   });
 
 // Model - 数据结构
@@ -52,13 +95,18 @@ function DomCreateing($Container, data) {
 
 // 获取子目录
 function getSubData(dir) {
-  const children = [];
-  const subItem = window.readDir(dir);
-  subItem.forEach((item) => {
-    const path = dir + seperator + item;
-    children.push({ name: item, path });
-  });
-  return children;
+  try {
+    const children = [];
+    const subItem = window.readDir(dir);
+    subItem.forEach((item) => {
+      const path = dir + seperator + item;
+      children.push({ name: item, path });
+    });
+    return children;
+  } catch (err) {
+    showError("读取目录失败: " + err.message);
+    return [];
+  }
 }
 
 // 递归遍历目录数据结构 —————— 不需要全部遍历...往下探一层就即可...
@@ -138,11 +186,21 @@ function staticDomEventBind() {
 
   $(".DRAG").on("drop", function (event) {
     event.preventDefault();
-    const files = Array.from(event.originalEvent.dataTransfer.files);
-    const target = $(this).hasClass("input") ? "INPUT" : "OUTPUT";
+    try {
+      const files = Array.from(event.originalEvent.dataTransfer.files);
+      const target = $(this).hasClass("input") ? "INPUT" : "OUTPUT";
 
-    files.forEach((file) => window[target].push(file));
-    DomCreateing($("." + target), window[target]);
+      if (files.length === 0) {
+        showError("未检测到文件");
+        return;
+      }
+
+      files.forEach((file) => window[target].push(file));
+      DomCreateing($("." + target), window[target]);
+      showSuccess(`成功添加 ${files.length} 个文件`);
+    } catch (err) {
+      showError("添加文件失败: " + err.message);
+    }
   });
 
   // 清空input
@@ -186,11 +244,46 @@ function staticDomEventBind() {
 
   // 复制Input所选文件到Output所选目录
   $(".copyToOutput").on("click", function () {
+    if (inputSelect.length === 0) {
+      showError("请选择要复制的文件");
+      return;
+    }
+    if (outputSelect.length === 0) {
+      showError("请选择目标目录");
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    const loading = showLoading("正在复制文件...");
+
     inputSelect.forEach((i) => {
       const name = getNameFromPath(i);
       outputSelect.forEach((o) => {
         // 只有是目录的才执行...
-        if (window.isDir(o)) window.copyTo(i, o + seperator + name);
+        if (window.isDir(o)) {
+          window.copyTo(i, o + seperator + name, (err) => {
+            if (err) {
+              errorCount++;
+              showError(`复制失败: ${err.message}`);
+            } else {
+              successCount++;
+            }
+            // 所有操作完成后显示结果
+            if (
+              successCount + errorCount ===
+              inputSelect.length * outputSelect.length
+            ) {
+              hideLoading(loading);
+              if (successCount > 0) {
+                showSuccess(`成功复制 ${successCount} 个文件`);
+              }
+            }
+          });
+        } else {
+          showError(`目标路径不是目录: ${o}`);
+        }
       });
     });
   });
@@ -200,10 +293,39 @@ function staticDomEventBind() {
     // 获取不重复的所有所选路径
     let origin = [...outputSelect, ...inputSelect];
     let uniqueArr = Array.from(new Set(origin));
-    uniqueArr.forEach(window.deleteFile);
-    $(".selected").remove();
-    outputSelect = [];
-    inputSelect = [];
+
+    if (uniqueArr.length === 0) {
+      showError("请选择要删除的文件或文件夹");
+      return;
+    }
+
+    // 确认删除
+    if (!confirm("确定要删除所选文件吗？此操作不可恢复。")) {
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    uniqueArr.forEach((target) => {
+      window.deleteFile(target, (err) => {
+        if (err) {
+          errorCount++;
+          showError(`删除失败: ${err.message}`);
+        } else {
+          successCount++;
+        }
+        // 所有操作完成后显示结果
+        if (successCount + errorCount === uniqueArr.length) {
+          if (successCount > 0) {
+            showSuccess(`成功删除 ${successCount} 个项目`);
+            // 刷新界面
+            DomCreateing($(".INPUT"), INPUT);
+            DomCreateing($(".OUTPUT"), OUTPUT);
+          }
+        }
+      });
+    });
   });
 }
 
