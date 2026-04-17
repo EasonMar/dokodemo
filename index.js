@@ -109,6 +109,24 @@ function getSubData(dir) {
   }
 }
 
+// 计算目录中文件数量（不包括子目录）
+function countFilesInDir(dir) {
+  try {
+    const items = window.readDir(dir);
+    let count = 0;
+    items.forEach((item) => {
+      const itemPath = dir + seperator + item;
+      if (!window.isDir(itemPath)) {
+        count++;
+      }
+    });
+    return count;
+  } catch (err) {
+    console.log(err);
+    return 0;
+  }
+}
+
 // 递归遍历目录数据结构 —————— 不需要全部遍历...往下探一层就即可...
 function generateList(data) {
   let result = "<ul>";
@@ -118,9 +136,17 @@ function generateList(data) {
     const expendTag = isFolder
       ? `<span class="expand" path="${path}">+</span>`
       : "";
+
+    let folderCount = "";
+    if (isFolder) {
+      const fileCount = countFilesInDir(item.path);
+      folderCount = ` <span class="file-count">(${fileCount})</span>`;
+      console.log(fileCount);
+    }
+
     result += `<li ${
       isFolder ? 'class="folder"' : '""'
-    }><div class="item" path="${path}">${expendTag} ${item.name}`;
+    }><div class="item" path="${path}">${expendTag}${folderCount}${item.name}`;
     if (item.children) {
       result += generateList(item.children);
     }

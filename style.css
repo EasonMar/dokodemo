@@ -85,14 +85,10 @@ ul .item {
   margin-bottom: 5px;
   padding: 10px;
   border-radius: 4px;
-  overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   transition: all 0.2s ease;
   cursor: pointer;
   color: black;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
 }
 
 ul .item:hover {
@@ -281,4 +277,10 @@ button:not(:last-child) {
 
 #confirmRename:hover {
   background-color: #45a049;
+}
+
+/* 文件数量样式 */
+.file-count {
+  color: #666;
+  font-size: 12px;
 }
