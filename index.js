@@ -178,6 +178,175 @@ function EventBinding($parent) {
   });
 }
 
+// 重命名相关函数
+function showRenameDialog() {
+  // 检查是否有选中的文件
+  const selectedPaths = [...inputSelect, ...outputSelect];
+  if (selectedPaths.length === 0) {
+    showError("请选择要重命名的文件或文件夹");
+    return;
+  }
+
+  // 显示对话框
+  $("#renameDialog").show();
+
+  // 生成预览
+  updateRenamePreview();
+}
+
+function hideRenameDialog() {
+  $("#renameDialog").hide();
+  // 重置表单
+  $("#newName").val("");
+  $("#regexPattern").val("");
+  $("#regexReplacement").val("");
+  $("#directRename").prop("checked", true);
+  $("#regexRename").prop("checked", false);
+  $(".regex-only").hide();
+}
+
+function updateRenamePreview() {
+  const selectedPaths = [...inputSelect, ...outputSelect];
+  const renameMode = $("input[name='renameMode']:checked").val();
+  const newName = $("#newName").val();
+  const regexPattern = $("#regexPattern").val();
+  const regexReplacement = $("#regexReplacement").val();
+
+  let previewHtml = "";
+
+  selectedPaths.forEach((path) => {
+    const oldName = getNameFromPath(path);
+    let newFileName = oldName;
+
+    if (renameMode === "direct") {
+      // 直接重命名
+      if (newName) {
+        // 保留文件扩展名
+        const extMatch = oldName.match(/(\.[^.]+)$/);
+        if (extMatch) {
+          newFileName = newName + extMatch[1];
+        } else {
+          newFileName = newName;
+        }
+      }
+    } else if (renameMode === "regex") {
+      // 正则替换
+      if (regexPattern) {
+        try {
+          const regex = new RegExp(regexPattern);
+          newFileName = oldName.replace(regex, regexReplacement);
+        } catch (err) {
+          showError("正则表达式无效");
+          return;
+        }
+      }
+    }
+
+    previewHtml += `<div><strong>原名称:</strong> ${oldName} → <strong>新名称:</strong> ${newFileName}</div>`;
+  });
+
+  $("#renamePreview").html(previewHtml);
+}
+
+function executeRename() {
+  const selectedPaths = [...inputSelect, ...outputSelect];
+  const renameMode = $("input[name='renameMode']:checked").val();
+  const newName = $("#newName").val();
+  const regexPattern = $("#regexPattern").val();
+  const regexReplacement = $("#regexReplacement").val();
+
+  if (selectedPaths.length === 0) {
+    showError("请选择要重命名的文件或文件夹");
+    return;
+  }
+
+  if (renameMode === "direct" && !newName) {
+    showError("请输入新名称");
+    return;
+  }
+
+  if (renameMode === "regex" && !regexPattern) {
+    showError("请输入正则表达式");
+    return;
+  }
+
+  let successCount = 0;
+  let errorCount = 0;
+
+  const loading = showLoading("正在重命名文件...");
+
+  selectedPaths.forEach((oldPath) => {
+    const oldName = getNameFromPath(oldPath);
+    let newFileName = oldName;
+
+    if (renameMode === "direct") {
+      // 直接重命名
+      // 保留文件扩展名
+      const extMatch = oldName.match(/(\.[^.]+)$/);
+      if (extMatch) {
+        newFileName = newName + extMatch[1];
+      } else {
+        newFileName = newName;
+      }
+    } else if (renameMode === "regex") {
+      // 正则替换
+      try {
+        const regex = new RegExp(regexPattern);
+        newFileName = oldName.replace(regex, regexReplacement);
+      } catch (err) {
+        showError("正则表达式无效");
+        hideLoading(loading);
+        return;
+      }
+    }
+
+    // 构建新路径
+    const parentPath = oldPath.substring(0, oldPath.lastIndexOf(seperator));
+    const newPath = parentPath + seperator + newFileName;
+
+    // 执行重命名
+    window.renameFile(oldPath, newPath, (err) => {
+      if (err) {
+        errorCount++;
+        showError(`重命名失败: ${err.message}`);
+      } else {
+        successCount++;
+        // 更新内存中的路径
+        if (inputSelect.includes(oldPath)) {
+          const index = INPUT.findIndex((item) => item.path === oldPath);
+          if (index !== -1) {
+            INPUT[index].name = newFileName;
+            INPUT[index].path = newPath;
+          }
+        }
+        if (outputSelect.includes(oldPath)) {
+          const index = OUTPUT.findIndex((item) => item.path === oldPath);
+          if (index !== -1) {
+            OUTPUT[index].name = newFileName;
+            OUTPUT[index].path = newPath;
+          }
+        }
+      }
+
+      // 所有操作完成后显示结果
+      if (successCount + errorCount === selectedPaths.length) {
+        hideLoading(loading);
+        if (successCount > 0) {
+          showSuccess(`成功重命名 ${successCount} 个项目`);
+          // 刷新界面
+          DomCreateing($(".INPUT"), INPUT);
+          DomCreateing($(".OUTPUT"), OUTPUT);
+          // 清空选择
+          inputSelect = [];
+          outputSelect = [];
+        }
+        // 隐藏对话框
+        hideRenameDialog();
+      }
+    });
+  });
+}
+
 function staticDomEventBind() {
   // 上传
   $(".DRAG").on("dragover", function (event) {
@@ -325,7 +494,41 @@ function staticDomEventBind() {
           }
         }
       });
+
+      $(".selected").remove();
+      outputSelect = [];
+      inputSelect = [];
     });
+  });
+
+  // 重命名模式切换
+  $("input[name='renameMode']").change(function () {
+    if ($(this).val() === "regex") {
+      $(".regex-only").show();
+    } else {
+      $(".regex-only").hide();
+    }
+    updateRenamePreview();
+  });
+
+  // 输入变化时更新预览
+  $("#newName, #regexPattern, #regexReplacement").on("input", function () {
+    updateRenamePreview();
+  });
+
+  // 重命名按钮点击
+  $(".renameSelected").on("click", function () {
+    showRenameDialog();
+  });
+
+  // 取消重命名
+  $("#cancelRename").on("click", function () {
+    hideRenameDialog();
+  });
+
+  // 确认重命名
+  $("#confirmRename").on("click", function () {
+    executeRename();
   });
 }
 

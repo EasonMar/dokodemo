@@ -19,6 +19,7 @@
         </div>
         <div class="common">
           <button class="deleteSelected">删除所选</button>
+          <button class="renameSelected">重命名所选</button>
         </div>
 
         <div class="outputBtn">
@@ -30,6 +31,60 @@
       <div class="display">
         <div class="INPUT"></div>
         <div class="OUTPUT"></div>
+      </div>
+    </div>
+
+    <!-- 重命名对话框 -->
+    <div id="renameDialog" class="dialog">
+      <div class="dialog-content">
+        <h3>重命名文件</h3>
+        <div class="rename-options">
+          <div class="option">
+            <input
+              type="radio"
+              id="directRename"
+              name="renameMode"
+              value="direct"
+              checked
+            />
+            <label for="directRename">直接重命名</label>
+          </div>
+          <div class="option">
+            <input
+              type="radio"
+              id="regexRename"
+              name="renameMode"
+              value="regex"
+            />
+            <label for="regexRename">正则替换</label>
+          </div>
+        </div>
+        <div class="rename-inputs">
+          <div class="input-group">
+            <label for="newName">新名称：</label>
+            <input type="text" id="newName" placeholder="输入新名称" />
+          </div>
+          <div class="input-group regex-only">
+            <label for="regexPattern">正则表达式：</label>
+            <input type="text" id="regexPattern" placeholder="输入正则表达式" />
+          </div>
+          <div class="input-group regex-only">
+            <label for="regexReplacement">替换为：</label>
+            <input
+              type="text"
+              id="regexReplacement"
+              placeholder="输入替换内容"
+            />
+          </div>
+        </div>
+        <div class="preview">
+          <h4>预览</h4>
+          <div id="renamePreview"></div>
+        </div>
+        <div class="dialog-buttons">
+          <button id="cancelRename">取消</button>
+          <button id="confirmRename">确认</button>
+        </div>
       </div>
     </div>
   </body>
