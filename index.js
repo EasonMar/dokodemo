@@ -373,7 +373,34 @@ function executeRename() {
 }
 
 function staticDomEventBind() {
-  // 上传
+  // 点击上传
+  $(".DRAG").on("click", function () {
+    const isInput = $(this).hasClass("input");
+    const target = isInput ? "INPUT" : "OUTPUT";
+    
+    // uTools API: 唤起原生文件选择框
+    const filePaths = utools.showOpenDialog({
+      title: isInput ? "选择源文件或文件夹" : "选择目标目录",
+      properties: isInput 
+        ? ["openFile", "openDirectory", "multiSelections"] 
+        : ["openDirectory", "multiSelections"]
+    });
+
+    if (filePaths && filePaths.length > 0) {
+      try {
+        filePaths.forEach((path) => {
+          const name = getNameFromPath(path);
+          window[target].push({ name, path });
+        });
+        DomCreateing($("." + target), window[target]);
+        showSuccess(`成功添加 ${filePaths.length} 个项目`);
+      } catch (err) {
+        showError("添加文件失败: " + err.message);
+      }
+    }
+  });
+
+  // 上传 (拖拽)
   $(".DRAG").on("dragover", function (event) {
     event.preventDefault();
   });
