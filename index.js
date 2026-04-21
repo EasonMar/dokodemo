@@ -146,11 +146,11 @@ function generateList(data) {
 
     result += `<li ${
       isFolder ? 'class="folder"' : '""'
-    }><div class="item" path="${path}">${expendTag}${folderCount}${item.name}`;
+    }><div class="item" path="${path}">${expendTag}${folderCount}${item.name}</div>`;
     if (item.children) {
       result += generateList(item.children);
     }
-    result += "</div></li>";
+    result += "</li>";
   }
   result += "</ul>";
   return result;
@@ -171,9 +171,8 @@ function EventBinding($parent) {
     const path = decodeURIComponent($(this).attr("path"));
     const selected = $(this).hasClass("selected");
     $(this).toggleClass("selected");
-    const target = $container.hasClass("INPUT")
-      ? "inputSelect"
-      : "outputSelect";
+    const target =
+      $(this).closest(".INPUT").length > 0 ? "inputSelect" : "outputSelect";
     if (selected) {
       // 消除
       window[target] = window[target].filter((s) => s !== path);
@@ -187,7 +186,7 @@ function EventBinding($parent) {
     event.stopPropagation(); // 阻止事件冒泡
     const attrPath = $(this).attr("path");
     const path = decodeURIComponent(attrPath);
-    const $parentLi = $(`.item[path='${attrPath}']`).parent();
+    const $parentLi = $(this).closest("li");
     const $this = $(this);
     if ($this.text() === "+") {
       // 如果未展开
@@ -199,7 +198,7 @@ function EventBinding($parent) {
     } else {
       // 收起
       $this.text("+");
-      $parentLi.find("ul").remove();
+      $parentLi.find("> ul").remove();
     }
   });
 }
