@@ -140,7 +140,7 @@ function generateList(data) {
     let folderCount = "";
     if (isFolder) {
       const fileCount = countFilesInDir(item.path);
-      folderCount = ` <span class="file-count">(${fileCount})</span>`;
+      folderCount = `<span class="file-count">(${fileCount})</span>`;
       console.log(fileCount);
     }
 
