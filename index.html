@@ -5,36 +5,32 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <div class="dragArea">
+    <div class="inputArea">
+      <div class="listTitle">输入列表</div>
       <div class="DRAG input">📥 点击或拖入源文件/文件夹至此</div>
-      <div class="DRAG output">📂 点击或拖入目标目录至此</div>
+      <div class="inputBtn">
+        <button class="empty">清空列表</button>
+        <button class="reset">取消选中</button>
+        <button class="remove">移出列表</button>
+      </div>
+      <div class="INPUT"></div>
     </div>
-    <div class="display">
-      <div class="inputArea">
-        <div class="listTitle">输入列表</div>
-        <div class="inputBtn">
-          <button class="empty">清空列表</button>
-          <button class="reset">取消选中</button>
-          <button class="remove">移出列表</button>
-        </div>
-        <div class="INPUT"></div>
+    <div class="actor">
+      <button class="copyToOutput">复制到目标目录→</button>
+      <button class="deleteSelected" style="color: #ff4d4f">
+        彻底删除 (本地文件)
+      </button>
+      <button class="renameSelected">重命名所选文件</button>
+      <button class="addToInput">←提取到输入列表</button>
+    </div>
+    <div class="outputArea">
+      <div class="listTitle">输出列表</div>
+      <div class="DRAG output">📂 点击或拖入目标目录至此</div>
+      <div class="outputBtn">
+        <button class="empty">清空列表</button>
+        <button class="reset">取消选中</button>
       </div>
-      <div class="actor">
-        <button class="copyToOutput">复制到目标目录→</button>
-        <button class="deleteSelected" style="color: #ff4d4f">
-          彻底删除 (本地文件)
-        </button>
-        <button class="renameSelected">重命名所选文件</button>
-        <button class="addToInput">←提取到输入列表</button>
-      </div>
-      <div class="outputArea">
-        <div class="listTitle">输出列表</div>
-        <div class="outputBtn">
-          <button class="empty">清空列表</button>
-          <button class="reset">取消选中</button>
-        </div>
-        <div class="OUTPUT"></div>
-      </div>
+      <div class="OUTPUT"></div>
     </div>
 
     <!-- 重命名对话框 -->
