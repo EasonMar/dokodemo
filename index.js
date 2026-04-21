@@ -3,7 +3,7 @@ function showError(message) {
   // 创建错误提示元素
   const errorElement = $('<div class="error-message"></div>').text(message);
   // 添加到界面
-  $(".window").prepend(errorElement);
+  $("body").prepend(errorElement);
   // 3秒后自动消失
   setTimeout(() => {
     errorElement.fadeOut(() => {
@@ -16,7 +16,7 @@ function showSuccess(message) {
   // 创建成功提示元素
   const successElement = $('<div class="success-message"></div>').text(message);
   // 添加到界面
-  $(".window").prepend(successElement);
+  $("body").prepend(successElement);
   // 3秒后自动消失
   setTimeout(() => {
     successElement.fadeOut(() => {
@@ -28,7 +28,7 @@ function showSuccess(message) {
 // 添加加载状态函数
 function showLoading(message) {
   const loadingElement = $('<div class="loading-message"></div>').text(message);
-  $(".window").prepend(loadingElement);
+  $("body").prepend(loadingElement);
   return loadingElement;
 }
 
