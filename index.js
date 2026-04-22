@@ -521,6 +521,27 @@ function staticDomEventBind() {
     DomCreateing($(".OUTPUT"), OUTPUT);
     showSuccess(`成功从列表移除 ${pathsToRemove.size} 个项目`);
   });
+
+  // 在系统资源管理器中打开所选（同时处理 Input 和 Output）
+  $(".openDir").on("click", function () {
+    const allSelected = [...new Set([...inputSelect, ...outputSelect])];
+
+    if (allSelected.length === 0) {
+      showError("请选择要打开的项目");
+      return;
+    }
+
+    // 遍历打开所有选中的路径
+    allSelected.forEach((path) => {
+      let targetPath = path;
+      // 如果不是目录，则获取其父目录
+      if (!window.isDir(path)) {
+        targetPath = path.substring(0, path.lastIndexOf(seperator));
+      }
+      utools.shellOpenPath(targetPath);
+    });
+  });
+
   // 撤销input所选
   $(".inputBtn .reset").on("click", function () {
     inputSelect = [];
