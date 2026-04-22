@@ -264,7 +264,7 @@ function updateRenamePreview() {
 
   let previewHtml = "";
 
-  selectedPaths.forEach((path) => {
+  selectedPaths.forEach((path, index) => {
     const oldName = getNameFromPath(path);
     let newFileName = oldName;
 
@@ -289,6 +289,18 @@ function updateRenamePreview() {
           showError("正则表达式无效");
           return;
         }
+      }
+    } else if (renameMode === "index") {
+      // 添加序号
+      const num = index + 1;
+      // 检查文件名是否以数字开头（可能带有分隔符如 - 或 _）
+      const match = oldName.match(/^(\d+)([-_ ]?)(.*)/);
+      if (match) {
+        // 如果原本就有序号，替换它，保留分隔符和后续内容
+        newFileName = `${num}${match[2]}${match[3]}`;
+      } else {
+        // 如果没有序号，直接加在前面
+        newFileName = `${num}、${oldName}`;
       }
     }
 
@@ -325,7 +337,7 @@ function executeRename() {
 
   const loading = showLoading("正在重命名文件...");
 
-  selectedPaths.forEach((oldPath) => {
+  selectedPaths.forEach((oldPath, index) => {
     const oldName = getNameFromPath(oldPath);
     let newFileName = oldName;
 
@@ -347,6 +359,15 @@ function executeRename() {
         showError("正则表达式无效");
         hideLoading(loading);
         return;
+      }
+    } else if (renameMode === "index") {
+      // 添加序号
+      const num = index + 1;
+      const match = oldName.match(/^(\d+)([-_ ]?)(.*)/);
+      if (match) {
+        newFileName = `${num}${match[2]}${match[3]}`;
+      } else {
+        newFileName = `${num}、${oldName}`;
       }
     }
 
