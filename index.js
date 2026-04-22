@@ -156,6 +156,31 @@ function generateList(data) {
   return result;
 }
 
+// 刷新指定文件夹的 UI（数量和子列表）
+function refreshFolderUI(path) {
+  const attrPath = encodeURIComponent(path);
+  const $items = $(`.item[path='${attrPath}']`);
+
+  $items.each(function () {
+    const $item = $(this);
+    const $parentLi = $item.parent();
+    const $expand = $item.find(".expand");
+
+    // 1. 更新文件数量
+    const fileCount = countFilesInDir(path);
+    $item.find(".file-count").text(`(${fileCount})`);
+
+    // 2. 如果已展开，刷新子列表内容
+    if ($expand.text() === "-") {
+      $parentLi.find("> ul").remove();
+      const children = getSubData(path);
+      const $sub = $(generateList(children));
+      $parentLi.append($sub);
+      EventBinding($sub);
+    }
+  });
+}
+
 // 从path里获取name
 function getNameFromPath(path) {
   const nameReg = utools.isWindows() ? /\\([^\\]*?)$/ : /\/([^\/]*?)$/; //  在Windows系统中，文件路径使用反斜杠“\”作为路径分隔符，例如：C:\Users\John\Documents\file.txt；macOS使用正斜杠“/”作为路径分隔符，例如：/Users/John/Documents/file.txt
@@ -377,13 +402,13 @@ function staticDomEventBind() {
   $(".DRAG").on("click", function () {
     const isInput = $(this).hasClass("input");
     const target = isInput ? "INPUT" : "OUTPUT";
-    
+
     // uTools API: 唤起原生文件选择框
     const filePaths = utools.showOpenDialog({
       title: isInput ? "选择源文件或文件夹" : "选择目标目录",
-      properties: isInput 
-        ? ["openFile", "openDirectory", "multiSelections"] 
-        : ["openDirectory", "multiSelections"]
+      properties: isInput
+        ? ["openFile", "openDirectory", "multiSelections"]
+        : ["openDirectory", "multiSelections"],
     });
 
     if (filePaths && filePaths.length > 0) {
@@ -524,6 +549,8 @@ function staticDomEventBind() {
               hideLoading(loading);
               if (successCount > 0) {
                 showSuccess(`成功复制 ${successCount} 个文件`);
+                // 刷新目标目录的 UI，确保展开的文件夹内容能及时更新
+                outputSelect.forEach((path) => refreshFolderUI(path));
               }
             }
           });
