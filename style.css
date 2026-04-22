@@ -234,14 +234,14 @@ button:active {
 
 .dialog-content {
   position: absolute;
-  top: 20%;
+  top: 6%;
   left: 50%;
   transform: translateX(-50%);
   background: white;
-  padding: 20px;
+  padding: 24px;
   border-radius: 8px;
   width: 90%;
-  max-width: 500px;
+  max-width: 680px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   animation: fadeIn 0.3s ease-in;
 }
@@ -284,6 +284,13 @@ button:active {
 
 .rename-inputs {
   margin-bottom: 20px;
+  display: flex;
+  gap: 12px;
+}
+
+.rename-inputs .input-group {
+  flex: 1;
+  margin-bottom: 0;
 }
 
 .input-group {
@@ -319,26 +326,63 @@ button:active {
 
 .preview {
   margin-bottom: 20px;
-  padding: 12px;
-  background: #f5f5f5;
   border-radius: 4px;
-  max-height: 150px;
-  overflow-y: auto;
   border: 1px solid #e0e0e0;
+  overflow: hidden;
 }
 
-.preview h4 {
-  margin-bottom: 8px;
+.preview-header {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  padding: 10px 16px;
+  background: #f5f5f5;
+  font-weight: 600;
+  font-size: 13px;
   color: #555;
-  font-size: 14px;
-  font-weight: 500;
+  border-bottom: 1px solid #e0e0e0;
 }
 
-#renamePreview {
+.preview-header span:nth-child(2) {
+  color: #999;
+}
+
+.preview #renamePreview {
   font-family: "Consolas", "Monaco", monospace;
   font-size: 13px;
-  color: #333;
+  max-height: 240px;
+  overflow-y: auto;
+  background: white;
+}
+
+.preview-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: 12px;
+  padding: 8px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  align-items: center;
   line-height: 1.5;
+}
+
+.preview-row:last-child {
+  border-bottom: none;
+}
+
+.preview-row .old {
+  color: #999;
+  word-break: break-all;
+}
+
+.preview-row .arrow {
+  color: #4a90e2;
+  font-weight: bold;
+}
+
+.preview-row .new {
+  color: #2e7d32;
+  font-weight: 500;
+  word-break: break-all;
 }
 
 .dialog-buttons {

@@ -304,7 +304,7 @@ function updateRenamePreview() {
       }
     }
 
-    previewHtml += `<div><strong>原名称:</strong> ${oldName} → <strong>新名称:</strong> ${newFileName}</div>`;
+    previewHtml += `<div class="preview-row"><span class="old">${oldName}</span><span class="arrow">→</span><span class="new">${newFileName}</span></div>`;
   });
 
   $("#renamePreview").html(previewHtml);
