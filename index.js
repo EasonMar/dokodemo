@@ -678,8 +678,10 @@ function staticDomEventBind() {
   $("input[name='renameMode']").change(function () {
     if ($(this).val() === "regex") {
       $(".regex-only").show();
+      $(".direct-only").hide();
     } else {
       $(".regex-only").hide();
+      $(".direct-only").show();
     }
     updateRenamePreview();
   });
