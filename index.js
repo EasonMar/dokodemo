@@ -494,6 +494,33 @@ function staticDomEventBind() {
     $(".OUTPUT .selected").removeClass("selected");
   });
 
+  // 移出(虚拟删除)output中所选项的最外层目录...
+  $(".outputBtn .remove").on("click", function () {
+    if (outputSelect.length === 0) {
+      showError("请选择要移除的项目");
+      return;
+    }
+    // 收集要移除的最外层目录路径
+    const pathsToRemove = new Set();
+    outputSelect.forEach((selectedPath) => {
+      // 找到该路径对应的最外层目录
+      const outerItem = OUTPUT.find((item) => {
+        return selectedPath.startsWith(item.path);
+      });
+      if (outerItem) {
+        pathsToRemove.add(outerItem.path);
+      }
+    });
+    // 从OUTPUT中移除这些目录
+    OUTPUT = OUTPUT.filter((item) => {
+      return !pathsToRemove.has(item.path);
+    });
+    // 清空选择
+    outputSelect = [];
+    // 重新生成DOM
+    DomCreateing($(".OUTPUT"), OUTPUT);
+    showSuccess(`成功从列表移除 ${pathsToRemove.size} 个项目`);
+  });
   // 撤销input所选
   $(".inputBtn .reset").on("click", function () {
     inputSelect = [];
