@@ -188,16 +188,34 @@ function getNameFromPath(path) {
   return path.match(nameReg)[1] || "";
 }
 
+// 更新取消选中按钮的显示状态
+function updateResetButtons() {
+  // 更新input取消选中按钮
+  const inputResetBtn = $(".inputBtn .reset");
+  if (inputSelect.length > 0) {
+    inputResetBtn.show().text(`取消选中 (${inputSelect.length})`);
+  } else {
+    inputResetBtn.hide();
+  }
+  
+  // 更新output取消选中按钮
+  const outputResetBtn = $(".outputBtn .reset");
+  if (outputSelect.length > 0) {
+    outputResetBtn.show().text(`取消选中 (${outputSelect.length})`);
+  } else {
+    outputResetBtn.hide();
+  }
+}
+
 // Event Binding
 function EventBinding($parent) {
-  const $container = $parent || $("body");
+  const $container = $parent || $(".window");
   $container.find(".item").click(function (event) {
     event.stopPropagation(); // 阻止事件冒泡
     const path = decodeURIComponent($(this).attr("path"));
     const selected = $(this).hasClass("selected");
     $(this).toggleClass("selected");
-    const target =
-      $(this).closest(".INPUT").length > 0 ? "inputSelect" : "outputSelect";
+    const target = $(this).closest(".INPUT").length > 0 ? "inputSelect" : "outputSelect";
     if (selected) {
       // 消除
       window[target] = window[target].filter((s) => s !== path);
@@ -205,6 +223,8 @@ function EventBinding($parent) {
       // 添加
       window[target].push(path);
     }
+    // 更新取消选中按钮状态
+    updateResetButtons();
   });
 
   $container.find(".expand").click(function (event) {
@@ -473,12 +493,18 @@ function staticDomEventBind() {
   // 清空input
   $(".inputBtn .empty").on("click", function () {
     INPUT = [];
+    inputSelect = [];
     $(".INPUT").empty();
+    // 更新取消选中按钮状态
+    updateResetButtons();
   });
   // 清空output
   $(".outputBtn .empty").on("click", function () {
     OUTPUT = [];
+    outputSelect = [];
     $(".OUTPUT").empty();
+    // 更新取消选中按钮状态
+    updateResetButtons();
   });
 
   // 移出(虚拟删除)input中所选项的最外层目录...
@@ -506,6 +532,8 @@ function staticDomEventBind() {
     inputSelect = [];
     // 重新生成DOM
     DomCreateing($(".INPUT"), INPUT);
+    // 更新取消选中按钮状态
+    updateResetButtons();
     showSuccess(`成功移除 ${pathsToRemove.size} 个目录`);
   });
 
@@ -513,6 +541,8 @@ function staticDomEventBind() {
   $(".outputBtn .reset").on("click", function () {
     outputSelect = [];
     $(".OUTPUT .selected").removeClass("selected");
+    // 更新取消选中按钮状态
+    updateResetButtons();
   });
 
   // 移出(虚拟删除)output中所选项的最外层目录...
@@ -540,6 +570,8 @@ function staticDomEventBind() {
     outputSelect = [];
     // 重新生成DOM
     DomCreateing($(".OUTPUT"), OUTPUT);
+    // 更新取消选中按钮状态
+    updateResetButtons();
     showSuccess(`成功从列表移除 ${pathsToRemove.size} 个项目`);
   });
 
@@ -567,6 +599,8 @@ function staticDomEventBind() {
   $(".inputBtn .reset").on("click", function () {
     inputSelect = [];
     $(".INPUT .selected").removeClass("selected");
+    // 更新取消选中按钮状态
+    updateResetButtons();
   });
 
   // 移动Output所选到Input
@@ -580,7 +614,12 @@ function staticDomEventBind() {
     outputSelect = [];
     $(".OUTPUT .selected").removeClass("selected");
     DomCreateing($(".INPUT"), INPUT);
+    // 更新取消选中按钮状态
+    updateResetButtons();
   });
+
+  // 初始化取消选中按钮状态
+  updateResetButtons();
 
   // 复制Input所选文件到Output所选目录
   $(".copyToOutput").on("click", function () {
