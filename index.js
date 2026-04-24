@@ -88,7 +88,8 @@ var outputSelect = [];
 
 // Dom Creating ———— 遍历dir树 ———— 直接用 ElementUI 的树形控件吧
 function DomCreateing($Container, data) {
-  const dom = generateList(data);
+  const isInput = $Container.hasClass("INPUT");
+  const dom = generateList(data, isInput);
   $Container.empty().append(dom);
   EventBinding($Container);
 }
@@ -128,7 +129,7 @@ function countFilesInDir(dir) {
 }
 
 // 递归遍历目录数据结构 —————— 不需要全部遍历...往下探一层就即可...
-function generateList(data) {
+function generateList(data, isInput = false) {
   let result = "<ul>";
   for (let item of data) {
     const isFolder = window.isDir(item.path);
@@ -141,14 +142,18 @@ function generateList(data) {
     if (isFolder) {
       const fileCount = countFilesInDir(item.path);
       folderCount = `<span class="file-count">(${fileCount})</span>`;
-      console.log(fileCount);
     }
+
+    // 检查是否在选择数组中
+    const selectArray = isInput ? inputSelect : outputSelect;
+    const isSelected = selectArray.includes(item.path);
+    const selectedClass = isSelected ? "selected" : "";
 
     result += `<li ${
       isFolder ? 'class="folder"' : '""'
-    }><div class="item" path="${path}">${expendTag}${folderCount}${item.name}</div>`;
+    }><div class="item ${selectedClass}" path="${path}">${expendTag}${folderCount}${item.name}</div>`;
     if (item.children) {
-      result += generateList(item.children);
+      result += generateList(item.children, isInput);
     }
     result += "</li>";
   }
@@ -174,7 +179,8 @@ function refreshFolderUI(path) {
     if ($expand.text() === "-") {
       $parentLi.find("> ul").remove();
       const children = getSubData(path);
-      const $sub = $(generateList(children));
+      const isInput = $parentLi.closest(".INPUT").length > 0;
+      const $sub = $(generateList(children, isInput));
       $parentLi.append($sub);
       EventBinding($sub);
     }
@@ -197,7 +203,7 @@ function updateResetButtons() {
   } else {
     inputResetBtn.hide();
   }
-  
+
   // 更新output取消选中按钮
   const outputResetBtn = $(".outputBtn .reset");
   if (outputSelect.length > 0) {
@@ -215,7 +221,8 @@ function EventBinding($parent) {
     const path = decodeURIComponent($(this).attr("path"));
     const selected = $(this).hasClass("selected");
     $(this).toggleClass("selected");
-    const target = $(this).closest(".INPUT").length > 0 ? "inputSelect" : "outputSelect";
+    const target =
+      $(this).closest(".INPUT").length > 0 ? "inputSelect" : "outputSelect";
     if (selected) {
       // 消除
       window[target] = window[target].filter((s) => s !== path);
