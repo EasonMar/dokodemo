@@ -22,6 +22,7 @@
         彻底删除 (本地文件)
       </button>
       <button class="renameSelected">重命名所选文件</button>
+      <button class="removeDuplicates">移除重复文件</button>
       <button class="addToInput">← 提取到输入列表</button>
     </div>
     <div class="outputArea">
@@ -98,6 +99,30 @@
         <div class="dialog-buttons">
           <button id="cancelRename">取消</button>
           <button id="confirmRename">确认</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 重复文件对话框 -->
+    <div id="duplicateDialog" class="dialog">
+      <div class="dialog-content">
+        <h3>查找重复文件</h3>
+        <div class="duplicate-options">
+          <div class="input-group">
+            <label for="scanPath">扫描路径：</label>
+            <input type="text" id="scanPath" placeholder="输入要扫描的目录路径" />
+          </div>
+          <div class="option">
+            <input type="checkbox" id="includeSubdirs" checked />
+            <label for="includeSubdirs">包含子目录</label>
+          </div>
+        </div>
+        <div id="duplicateResults"></div>
+        <div class="dialog-buttons">
+          <button id="selectAllDuplicates" style="display: none;">全选所有重复文件</button>
+          <button id="scanDuplicates">开始扫描</button>
+          <button id="cancelDuplicate">取消</button>
+          <button id="deleteDuplicates" style="background: #ff4d4f; color: white; border-color: #ff4d4f; display: none;">删除重复文件</button>
         </div>
       </div>
     </div>

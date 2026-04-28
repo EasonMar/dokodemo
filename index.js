@@ -742,6 +742,11 @@ function staticDomEventBind() {
     showRenameDialog();
   });
 
+  // 移除重复文件按钮点击
+  $(".removeDuplicates").on("click", function () {
+    showDuplicateDialog();
+  });
+
   // 取消重命名
   $("#cancelRename").on("click", function () {
     hideRenameDialog();
@@ -751,6 +756,286 @@ function staticDomEventBind() {
   $("#confirmRename").on("click", function () {
     executeRename();
   });
+
+  // 显示重复文件对话框
+  $("#scanDuplicates").on("click", function () {
+    scanDuplicateFiles();
+  });
+
+  // 取消重复文件对话框
+  $("#cancelDuplicate").on("click", function () {
+    hideDuplicateDialog();
+  });
+
+  // 删除重复文件
+  $("#deleteDuplicates").on("click", function () {
+    deleteSelectedDuplicates();
+  });
+
+  // 全选/取消全选重复文件（不包括原始文件）
+  $(document).on("change", ".select-all-checkbox", function () {
+    const isChecked = $(this).prop("checked");
+    const groupId = $(this).data("groupId");
+    // 只选中非disabled的checkbox（即非原始文件）
+    $(
+      `.duplicate-file-item[data-group-id='${groupId}'] input[type='checkbox']:not(:disabled)`,
+    ).prop("checked", isChecked);
+  });
+
+  // 全选所有重复文件（不包括原始文件）
+  $("#selectAllDuplicates").on("click", function () {
+    // 选中所有非disabled的checkbox
+    $("#duplicateResults input[type='checkbox']:not(:disabled)").prop(
+      "checked",
+      true,
+    );
+  });
 }
 
 staticDomEventBind();
+
+// 重复文件相关函数
+function showDuplicateDialog() {
+  // 获取当前目录路径作为默认值
+  utools
+    .readCurrentFolderPath()
+    .then((path) => {
+      $("#scanPath").val(path);
+    })
+    .catch(() => {
+      $("#scanPath").val("");
+    });
+  $("#duplicateDialog").show();
+  $("#duplicateResults").html("");
+  $("#deleteDuplicates").hide();
+}
+
+function hideDuplicateDialog() {
+  $("#duplicateDialog").hide();
+  $("#duplicateResults").html("");
+  $("#scanPath").val("");
+}
+
+// 解析文件名，去除末尾的 (n) 序号
+function parseFileName(name) {
+  // 匹配末尾的 (数字) 模式
+  const match = name.match(/^(.*?)\s*\((\d+)\)(\.[^.]+)?$/);
+  if (match) {
+    const baseName = match[1];
+    const ext = match[3] || "";
+    return {
+      baseName: baseName + ext,
+      hasSuffix: true,
+      suffixNum: parseInt(match[2]),
+    };
+  }
+  return {
+    baseName: name,
+    hasSuffix: false,
+    suffixNum: 0,
+  };
+}
+
+// 递归扫描目录获取所有文件
+function scanFiles(dir, includeSubdirs, files = []) {
+  try {
+    const items = window.readDir(dir);
+    items.forEach((item) => {
+      const path = dir + seperator + item;
+      if (window.isDir(path)) {
+        if (includeSubdirs) {
+          scanFiles(path, includeSubdirs, files);
+        }
+      } else {
+        const size = window.getFileSize(path);
+        files.push({
+          name: item,
+          path: path,
+          size: size,
+        });
+      }
+    });
+  } catch (err) {
+    console.log("扫描目录失败:", err);
+  }
+  return files;
+}
+
+// 查找重复文件
+function findDuplicateFiles(files) {
+  const groups = {};
+
+  files.forEach((file) => {
+    const parsed = parseFileName(file.name);
+    // 以基础文件名和文件大小作为键来判断重复
+    const key = `${parsed.baseName}_${file.size}`;
+
+    if (!groups[key]) {
+      groups[key] = [];
+    }
+    groups[key].push({
+      ...file,
+      parsed: parsed,
+    });
+  });
+
+  // 过滤出有重复的组（包含多个文件的组）
+  const duplicateGroups = Object.values(groups).filter(
+    (group) => group.length > 1,
+  );
+
+  // 对每个组按序号排序
+  duplicateGroups.forEach((group) => {
+    group.sort((a, b) => {
+      // 没有序号的排前面（视为原始文件）
+      if (!a.parsed.hasSuffix && b.parsed.hasSuffix) return -1;
+      if (a.parsed.hasSuffix && !b.parsed.hasSuffix) return 1;
+      // 都有序号的按序号大小排序
+      return a.parsed.suffixNum - b.parsed.suffixNum;
+    });
+  });
+
+  return duplicateGroups;
+}
+
+// 扫描重复文件
+function scanDuplicateFiles() {
+  const scanPath = $("#scanPath").val().trim();
+  const includeSubdirs = $("#includeSubdirs").prop("checked");
+
+  if (!scanPath) {
+    showError("请输入要扫描的目录路径");
+    return;
+  }
+
+  if (!window.isDir(scanPath)) {
+    showError("输入的路径不是有效的目录");
+    return;
+  }
+
+  const loading = showLoading("正在扫描文件...");
+
+  setTimeout(() => {
+    try {
+      const files = scanFiles(scanPath, includeSubdirs);
+      const duplicateGroups = findDuplicateFiles(files);
+
+      hideLoading(loading);
+      displayDuplicateResults(duplicateGroups);
+    } catch (err) {
+      hideLoading(loading);
+      showError("扫描失败: " + err.message);
+    }
+  }, 100);
+}
+
+// 显示重复文件结果
+function displayDuplicateResults(groups) {
+  if (groups.length === 0) {
+    $("#duplicateResults").html(
+      '<div style="text-align: center; padding: 40px; color: #666;">未找到重复文件</div>',
+    );
+    $("#deleteDuplicates").hide();
+    return;
+  }
+
+  let html = "";
+  groups.forEach((group, groupIndex) => {
+    const firstFile = group[0];
+    const groupId = `group-${groupIndex}`;
+
+    html += `
+      <div class="select-all-group">
+        <input type="checkbox" class="select-all-checkbox" data-group-id="${groupId}" />
+        <label>全选此组 (${group.length - 1} 个文件)</label>
+      </div>
+      <div class="duplicate-group">
+        <div class="duplicate-group-header">
+          <span>${firstFile.parsed.baseName}</span>
+          <span class="count">${group.length - 1} 个重复</span>
+        </div>
+        <div class="duplicate-file-list">
+    `;
+
+    group.forEach((file, index) => {
+      const isOriginal = index === 0;
+      const sizeStr = formatFileSize(file.size);
+      html += `
+          <div class="duplicate-file-item ${isOriginal ? "original" : ""}" data-group-id="${groupId}">
+            <input type="checkbox" class="checkbox" data-path="${encodeURIComponent(file.path)}" ${isOriginal ? "disabled" : ""} />
+            <span class="filename">${isOriginal ? "[原始] " : ""}${file.name}</span>
+            <span class="size">${sizeStr}</span>
+          </div>
+        `;
+    });
+
+    html += `
+        </div>
+      </div>
+    `;
+  });
+
+  $("#duplicateResults").html(html);
+  $("#deleteDuplicates").show();
+  $("#selectAllDuplicates").show();
+}
+
+// 格式化文件大小
+function formatFileSize(bytes) {
+  if (bytes === 0) return "0 B";
+  const k = 1024;
+  const sizes = ["B", "KB", "MB", "GB"];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+}
+
+// 删除选中的重复文件
+function deleteSelectedDuplicates() {
+  const selectedBoxes = $(
+    ".duplicate-file-list input[type='checkbox']:checked",
+  );
+
+  if (selectedBoxes.length === 0) {
+    showError("请选择要删除的重复文件");
+    return;
+  }
+
+  if (
+    !confirm(
+      `确定要删除选中的 ${selectedBoxes.length} 个重复文件吗？此操作不可恢复。`,
+    )
+  ) {
+    return;
+  }
+
+  const pathsToDelete = selectedBoxes
+    .map(function () {
+      return decodeURIComponent($(this).data("path"));
+    })
+    .get();
+
+  let successCount = 0;
+  let errorCount = 0;
+
+  const loading = showLoading("正在删除文件...");
+
+  pathsToDelete.forEach((path) => {
+    window.deleteFile(path, (err) => {
+      if (err) {
+        errorCount++;
+        showError(`删除失败: ${err.message}`);
+      } else {
+        successCount++;
+      }
+
+      if (successCount + errorCount === pathsToDelete.length) {
+        hideLoading(loading);
+        if (successCount > 0) {
+          showSuccess(`成功删除 ${successCount} 个重复文件`);
+          // 重新扫描显示更新后的结果
+          scanDuplicateFiles();
+        }
+      }
+    });
+  });
+}

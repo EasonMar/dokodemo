@@ -19,6 +19,17 @@ window.isDir = function (path) {
   }
 };
 
+// 获取文件大小（字节）
+window.getFileSize = function (path) {
+  try {
+    const stat = fs.statSync(path);
+    return stat.size;
+  } catch (err) {
+    console.error("获取文件大小失败:", err);
+    return 0; // 返回默认值，避免程序崩溃
+  }
+};
+
 window.copyTo = function (source, dest, callback) {
   // copyFile('source.txt', 'destination.txt', callback);
   fs.copyFile(source, dest, (err) => {

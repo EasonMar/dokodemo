@@ -428,3 +428,93 @@ button:active {
   transition: all 0.2s ease;
   margin: 0 4px 0 -6px;
 }
+
+/* 重复文件对话框样式 */
+.duplicate-options {
+  margin-bottom: 20px;
+}
+
+#duplicateResults {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-bottom: 20px;
+}
+
+.duplicate-group {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.duplicate-group-header {
+  background: #f5f5f5;
+  padding: 10px 12px;
+  font-weight: 500;
+  color: #333;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.duplicate-group-header .count {
+  background: #4a90e2;
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.duplicate-file-list {
+  padding: 8px;
+}
+
+.duplicate-file-item {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid #f0f0f0;
+  font-family: "Consolas", "Monaco", monospace;
+  font-size: 13px;
+}
+
+.duplicate-file-item:last-child {
+  border-bottom: none;
+}
+
+.duplicate-file-item .checkbox {
+  margin-right: 10px;
+}
+
+.duplicate-file-item .filename {
+  flex: 1;
+  color: #333;
+  word-break: break-all;
+}
+
+.duplicate-file-item .size {
+  color: #999;
+  font-size: 12px;
+  margin-left: 12px;
+}
+
+.duplicate-file-item.original {
+  background: #e8f5e8;
+}
+
+.duplicate-file-item.original .filename {
+  color: #2e7d32;
+  font-weight: 500;
+}
+
+.select-all-group {
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.select-all-group label {
+  cursor: pointer;
+  font-weight: 500;
+}
