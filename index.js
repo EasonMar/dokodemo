@@ -816,23 +816,33 @@ function hideDuplicateDialog() {
   $("#scanPath").val("");
 }
 
-// 解析文件名，去除末尾的 (n) 序号
+// 解析文件名，去除末尾的所有 (n) 序号（支持多层嵌套）
 function parseFileName(name) {
-  // 匹配末尾的 (数字) 模式
-  const match = name.match(/^(.*?)\s*\((\d+)\)(\.[^.]+)?$/);
-  if (match) {
-    const baseName = match[1];
-    const ext = match[3] || "";
-    return {
-      baseName: baseName + ext,
-      hasSuffix: true,
-      suffixNum: parseInt(match[2]),
-    };
+  // 先提取文件扩展名
+  const extMatch = name.match(/(\.\w+)$/);
+  const ext = extMatch ? extMatch[1] : "";
+  const nameWithoutExt = extMatch ? name.substring(0, name.length - ext.length) : name;
+  
+  let currentName = nameWithoutExt;
+  let hasSuffix = false;
+  let suffixNum = 0;
+  
+  // 循环去除所有的 (n) 或 （n） 序号
+  while (true) {
+    const match = currentName.match(/^(.+?)\s*[（(](\d+)[)）]$/);
+    if (match) {
+      currentName = match[1];
+      hasSuffix = true;
+      suffixNum = parseInt(match[2]);
+    } else {
+      break;
+    }
   }
+  
   return {
-    baseName: name,
-    hasSuffix: false,
-    suffixNum: 0,
+    baseName: currentName + ext,
+    hasSuffix: hasSuffix,
+    suffixNum: suffixNum,
   };
 }
 
