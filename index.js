@@ -873,26 +873,51 @@ function scanFiles(dir, includeSubdirs, files = []) {
 
 // 查找重复文件
 function findDuplicateFiles(files) {
-  const groups = {};
-
+  // 按基础文件名分组
+  const baseNameGroups = {};
   files.forEach((file) => {
     const parsed = parseFileName(file.name);
-    // 以基础文件名和文件大小作为键来判断重复
-    const key = `${parsed.baseName}_${file.size}`;
-
-    if (!groups[key]) {
-      groups[key] = [];
+    if (!baseNameGroups[parsed.baseName]) {
+      baseNameGroups[parsed.baseName] = [];
     }
-    groups[key].push({
+    baseNameGroups[parsed.baseName].push({
       ...file,
       parsed: parsed,
     });
   });
 
-  // 过滤出有重复的组（包含多个文件的组）
-  const duplicateGroups = Object.values(groups).filter(
-    (group) => group.length > 1,
-  );
+  // 对于每个 baseName 组，进一步按大小相似度分组（差异不超过1KB）
+  const duplicateGroups = [];
+  const SIZE_THRESHOLD = 1024; // 1KB
+
+  Object.values(baseNameGroups).forEach((filesWithSameBaseName) => {
+    if (filesWithSameBaseName.length < 2) return;
+
+    // 按文件大小排序，便于比较相邻文件
+    filesWithSameBaseName.sort((a, b) => a.size - b.size);
+
+    // 构建大小相似的文件组
+    let currentGroup = [filesWithSameBaseName[0]];
+    for (let i = 1; i < filesWithSameBaseName.length; i++) {
+      const prevFile = currentGroup[currentGroup.length - 1];
+      const currFile = filesWithSameBaseName[i];
+
+      if (currFile.size - prevFile.size <= SIZE_THRESHOLD) {
+        // 大小差异在1KB以内，视为重复
+        currentGroup.push(currFile);
+      } else {
+        // 大小差异超过1KB，结束当前组
+        if (currentGroup.length > 1) {
+          duplicateGroups.push(currentGroup);
+        }
+        currentGroup = [currFile];
+      }
+    }
+    // 检查最后一个组
+    if (currentGroup.length > 1) {
+      duplicateGroups.push(currentGroup);
+    }
+  });
 
   // 对每个组按序号排序
   duplicateGroups.forEach((group) => {
