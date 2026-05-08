@@ -801,15 +801,32 @@ staticDomEventBind();
 
 // 重复文件相关函数
 function showDuplicateDialog() {
-  // 获取当前目录路径作为默认值
-  utools
-    .readCurrentFolderPath()
-    .then((path) => {
-      $("#scanPath").val(path);
-    })
-    .catch(() => {
-      $("#scanPath").val("");
-    });
+  // 优先使用已选中的文件夹路径
+  const allSelected = [...new Set([...inputSelect, ...outputSelect])];
+  let defaultPath = "";
+  
+  // 找到第一个是目录的选中项
+  for (const path of allSelected) {
+    if (window.isDir(path)) {
+      defaultPath = path;
+      break;
+    }
+  }
+  
+  // 如果没有选中目录，使用当前目录
+  if (!defaultPath) {
+    utools
+      .readCurrentFolderPath()
+      .then((path) => {
+        $("#scanPath").val(path);
+      })
+      .catch(() => {
+        $("#scanPath").val("");
+      });
+  } else {
+    $("#scanPath").val(defaultPath);
+  }
+  
   $("#duplicateDialog").show();
   $("#duplicateResults").html("");
   $("#deleteDuplicates").hide();
