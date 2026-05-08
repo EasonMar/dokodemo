@@ -702,21 +702,26 @@ function staticDomEventBind() {
           showError(`删除失败: ${err.message}`);
         } else {
           successCount++;
+          // 删除成功后，移除对应的DOM元素
+          const encodedPath = encodeURIComponent(target);
+          $(`.item[path='${encodedPath}']`).closest("li").remove();
+          
+          // 从数组中移除
+          INPUT = INPUT.filter((item) => item.path !== target);
+          OUTPUT = OUTPUT.filter((item) => item.path !== target);
         }
         // 所有操作完成后显示结果
         if (successCount + errorCount === uniqueArr.length) {
           if (successCount > 0) {
             showSuccess(`成功删除 ${successCount} 个项目`);
-            // 刷新界面
-            DomCreateing($(".INPUT"), INPUT);
-            DomCreateing($(".OUTPUT"), OUTPUT);
           }
         }
       });
 
-      $(".selected").remove();
+      // 清空选择状态
       outputSelect = [];
       inputSelect = [];
+      $(".selected").removeClass("selected");
     });
   });
 
@@ -821,12 +826,14 @@ function parseFileName(name) {
   // 先提取文件扩展名
   const extMatch = name.match(/(\.\w+)$/);
   const ext = extMatch ? extMatch[1] : "";
-  const nameWithoutExt = extMatch ? name.substring(0, name.length - ext.length) : name;
-  
+  const nameWithoutExt = extMatch
+    ? name.substring(0, name.length - ext.length)
+    : name;
+
   let currentName = nameWithoutExt;
   let hasSuffix = false;
   let suffixNum = 0;
-  
+
   // 循环去除所有的 (n) 或 （n） 序号
   while (true) {
     const match = currentName.match(/^(.+?)\s*[（(](\d+)[)）]$/);
@@ -838,7 +845,7 @@ function parseFileName(name) {
       break;
     }
   }
-  
+
   return {
     baseName: currentName + ext,
     hasSuffix: hasSuffix,
