@@ -267,6 +267,11 @@ function showRenameDialog() {
   // 显示对话框
   $("#renameDialog").show();
 
+  // 默认显示序号排序选项
+  $(".regex-only").hide();
+  $(".direct-only").hide();
+  $(".index-only").show();
+
   // 生成预览
   updateRenamePreview();
 }
@@ -277,13 +282,14 @@ function hideRenameDialog() {
   $("#newName").val("");
   $("#regexPattern").val("");
   $("#regexReplacement").val("");
-  $("#directRename").prop("checked", true);
+  $("#indexRename").prop("checked", true);
+  $("#directRename").prop("checked", false);
   $("#regexRename").prop("checked", false);
-  $("#indexRename").prop("checked", false);
-  $("#sortByFilename").prop("checked", true);
-  $("#sortBySelection").prop("checked", false);
+  $("#sortBySelection").prop("checked", true);
+  $("#sortByFilename").prop("checked", false);
   $(".regex-only").hide();
-  $(".index-only").hide();
+  $(".direct-only").hide();
+  $(".index-only").show();
 }
 
 function updateRenamePreview() {
@@ -793,6 +799,33 @@ function staticDomEventBind() {
   // 确认重命名
   $("#confirmRename").on("click", function () {
     executeRename();
+  });
+
+  // 复制所选文件名
+  $("#copyFilenames").on("click", function () {
+    const newNames = [];
+    // 遍历预览区域中的新文件名
+    $("#renamePreview .preview-row").each(function () {
+      const newName = $(this).find(".new").text().trim();
+      if (newName) {
+        newNames.push(newName);
+      }
+    });
+
+    if (newNames.length === 0) {
+      showError("没有可复制的文件名");
+      return;
+    }
+
+    // 用分号分隔所有文件名
+    const textToCopy = newNames.join("; ");
+
+    // 复制到剪贴板
+    navigator.clipboard.writeText(textToCopy).then(function () {
+      showSuccess("已复制 " + newNames.length + " 个文件名");
+    }).catch(function (err) {
+      showError("复制失败: " + err.message);
+    });
   });
 
   // 显示重复文件对话框

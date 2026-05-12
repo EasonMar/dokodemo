@@ -183,7 +183,7 @@ button:active {
   top: 20px;
   left: 20px;
   right: 10px;
-  z-index: 1000;
+  z-index: 2000;
   padding: 10px 16px;
   margin-bottom: 10px;
   border-radius: 4px;
@@ -422,6 +422,31 @@ button:active {
   color: #2e7d32;
   font-weight: 500;
   word-break: break-all;
+}
+
+.copy-filenames {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+#copyFilenames {
+  padding: 8px 20px;
+  border: 1px solid #4a90e2;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  background: #4a90e2;
+  color: white;
+}
+
+#copyFilenames:hover {
+  background: #357abd;
+}
+
+#copyFilenames:active {
+  background: #2c6db5;
 }
 
 .dialog-buttons {

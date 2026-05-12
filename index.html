@@ -48,10 +48,19 @@
           <div class="option">
             <input
               type="radio"
+              id="indexRename"
+              name="renameMode"
+              value="index"
+              checked
+            />
+            <label for="indexRename">添加序号</label>
+          </div>
+          <div class="option">
+            <input
+              type="radio"
               id="directRename"
               name="renameMode"
               value="direct"
-              checked
             />
             <label for="directRename">直接重命名</label>
           </div>
@@ -64,15 +73,6 @@
             />
             <label for="regexRename">正则替换</label>
           </div>
-          <div class="option">
-            <input
-              type="radio"
-              id="indexRename"
-              name="renameMode"
-              value="index"
-            />
-            <label for="indexRename">添加序号</label>
-          </div>
         </div>
         <div class="rename-inputs">
           <div class="input-group index-only">
@@ -81,21 +81,21 @@
               <div class="option">
                 <input
                   type="radio"
-                  id="sortByFilename"
+                  id="sortBySelection"
                   name="indexSortMode"
-                  value="filename"
+                  value="selection"
                   checked
                 />
-                <label for="sortByFilename">按文件名排序</label>
+                <label for="sortBySelection">按勾选顺序</label>
               </div>
               <div class="option">
                 <input
                   type="radio"
-                  id="sortBySelection"
+                  id="sortByFilename"
                   name="indexSortMode"
-                  value="selection"
+                  value="filename"
                 />
-                <label for="sortBySelection">按勾选顺序</label>
+                <label for="sortByFilename">按文件名排序</label>
               </div>
             </div>
           </div>
@@ -123,6 +123,9 @@
             <span>新名称</span>
           </div>
           <div id="renamePreview"></div>
+        </div>
+        <div class="copy-filenames">
+          <button id="copyFilenames">复制新名称</button>
         </div>
         <div class="dialog-buttons">
           <button id="cancelRename">取消</button>
