@@ -279,17 +279,30 @@ function hideRenameDialog() {
   $("#regexReplacement").val("");
   $("#directRename").prop("checked", true);
   $("#regexRename").prop("checked", false);
+  $("#indexRename").prop("checked", false);
+  $("#sortByFilename").prop("checked", true);
+  $("#sortBySelection").prop("checked", false);
   $(".regex-only").hide();
+  $(".index-only").hide();
 }
 
 function updateRenamePreview() {
-  const selectedPaths = [...inputSelect, ...outputSelect];
+  let selectedPaths = [...inputSelect, ...outputSelect];
   const renameMode = $("input[name='renameMode']:checked").val();
   const newName = $("#newName").val();
   const regexPattern = $("#regexPattern").val();
   const regexReplacement = $("#regexReplacement").val();
+  const indexSortMode = $("input[name='indexSortMode']:checked").val();
 
   let previewHtml = "";
+
+  if (renameMode === "index" && indexSortMode === "filename") {
+    selectedPaths.sort((a, b) => {
+      const nameA = getNameFromPath(a).toLowerCase();
+      const nameB = getNameFromPath(b).toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
+  }
 
   selectedPaths.forEach((path, index) => {
     const oldName = getNameFromPath(path);
@@ -338,11 +351,12 @@ function updateRenamePreview() {
 }
 
 function executeRename() {
-  const selectedPaths = [...inputSelect, ...outputSelect];
+  let selectedPaths = [...inputSelect, ...outputSelect];
   const renameMode = $("input[name='renameMode']:checked").val();
   const newName = $("#newName").val();
   const regexPattern = $("#regexPattern").val();
   const regexReplacement = $("#regexReplacement").val();
+  const indexSortMode = $("input[name='indexSortMode']:checked").val();
 
   if (selectedPaths.length === 0) {
     showError("请选择要重命名的文件或文件夹");
@@ -357,6 +371,14 @@ function executeRename() {
   if (renameMode === "regex" && !regexPattern) {
     showError("请输入正则表达式");
     return;
+  }
+
+  if (renameMode === "index" && indexSortMode === "filename") {
+    selectedPaths.sort((a, b) => {
+      const nameA = getNameFromPath(a).toLowerCase();
+      const nameB = getNameFromPath(b).toLowerCase();
+      return nameA.localeCompare(nameB);
+    });
   }
 
   let successCount = 0;
@@ -730,15 +752,26 @@ function staticDomEventBind() {
     if ($(this).val() === "regex") {
       $(".regex-only").show();
       $(".direct-only").hide();
+      $(".index-only").hide();
+    } else if ($(this).val() === "index") {
+      $(".regex-only").hide();
+      $(".direct-only").hide();
+      $(".index-only").show();
     } else {
       $(".regex-only").hide();
       $(".direct-only").show();
+      $(".index-only").hide();
     }
     updateRenamePreview();
   });
 
   // 输入变化时更新预览
   $("#newName, #regexPattern, #regexReplacement").on("input", function () {
+    updateRenamePreview();
+  });
+
+  // 序号排序方式变化时更新预览
+  $("input[name='indexSortMode']").change(function () {
     updateRenamePreview();
   });
 

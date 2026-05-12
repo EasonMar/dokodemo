@@ -75,6 +75,30 @@
           </div>
         </div>
         <div class="rename-inputs">
+          <div class="input-group index-only">
+            <label>序号排序方式：</label>
+            <div class="sort-options">
+              <div class="option">
+                <input
+                  type="radio"
+                  id="sortByFilename"
+                  name="indexSortMode"
+                  value="filename"
+                  checked
+                />
+                <label for="sortByFilename">按文件名排序</label>
+              </div>
+              <div class="option">
+                <input
+                  type="radio"
+                  id="sortBySelection"
+                  name="indexSortMode"
+                  value="selection"
+                />
+                <label for="sortBySelection">按勾选顺序</label>
+              </div>
+            </div>
+          </div>
           <div class="input-group direct-only">
             <label for="newName">新名称：</label>
             <input type="text" id="newName" placeholder="输入新名称" />

@@ -324,6 +324,45 @@ button:active {
   display: none;
 }
 
+.index-only {
+  display: none;
+}
+
+.sort-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0 0 0;
+}
+
+.sort-options .option {
+  margin-bottom: 0;
+  padding: 6px 8px;
+  background: #fafafa;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.sort-options .option:hover {
+  background: #f0f0f0;
+  border-color: #d0d0d0;
+}
+
+.sort-options .option input[type="radio"] {
+  cursor: pointer;
+  width: 14px;
+}
+
+.sort-options .option label {
+  cursor: pointer;
+  font-size: 13px;
+  color: #555;
+}
+
 .preview {
   margin-bottom: 20px;
   border-radius: 4px;
