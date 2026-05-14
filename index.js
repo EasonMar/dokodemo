@@ -733,7 +733,7 @@ function staticDomEventBind() {
           // 删除成功后，移除对应的DOM元素
           const encodedPath = encodeURIComponent(target);
           $(`.item[path='${encodedPath}']`).closest("li").remove();
-          
+
           // 从数组中移除
           INPUT = INPUT.filter((item) => item.path !== target);
           OUTPUT = OUTPUT.filter((item) => item.path !== target);
@@ -817,15 +817,18 @@ function staticDomEventBind() {
       return;
     }
 
-    // 用分号分隔所有文件名
-    const textToCopy = newNames.join("; ");
+    // 用逗号分隔所有文件名
+    const textToCopy = newNames.join(", ");
 
     // 复制到剪贴板
-    navigator.clipboard.writeText(textToCopy).then(function () {
-      showSuccess("已复制 " + newNames.length + " 个文件名");
-    }).catch(function (err) {
-      showError("复制失败: " + err.message);
-    });
+    navigator.clipboard
+      .writeText(textToCopy)
+      .then(function () {
+        showSuccess("已复制 " + newNames.length + " 个文件名");
+      })
+      .catch(function (err) {
+        showError("复制失败: " + err.message);
+      });
   });
 
   // 显示重复文件对话框
@@ -870,7 +873,7 @@ function showDuplicateDialog() {
   // 优先使用已选中的文件夹路径
   const allSelected = [...new Set([...inputSelect, ...outputSelect])];
   let defaultPath = "";
-  
+
   // 找到第一个是目录的选中项
   for (const path of allSelected) {
     if (window.isDir(path)) {
@@ -878,7 +881,7 @@ function showDuplicateDialog() {
       break;
     }
   }
-  
+
   // 如果没有选中目录，使用当前目录
   if (!defaultPath) {
     utools
@@ -892,7 +895,7 @@ function showDuplicateDialog() {
   } else {
     $("#scanPath").val(defaultPath);
   }
-  
+
   $("#duplicateDialog").show();
   $("#duplicateResults").html("");
   $("#deleteDuplicates").hide();
