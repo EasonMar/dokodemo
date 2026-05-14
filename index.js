@@ -734,6 +734,69 @@ function staticDomEventBind() {
     });
   });
 
+  // 移动Input所选文件到Output所选目录（真正的系统级移动）
+  $(".moveToOutput").on("click", function () {
+    if (inputSelect.length === 0) {
+      showError("请选择要移动的文件");
+      return;
+    }
+    if (outputSelect.length === 0) {
+      showError("请选择目标目录");
+      return;
+    }
+
+    // 确认移动
+    if (!confirm(`确定要移动 ${inputSelect.length} 个文件吗？此操作将直接移动文件系统中的文件。`)) {
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    const loading = showLoading("正在移动文件...");
+
+    inputSelect.forEach((srcPath) => {
+      const name = getNameFromPath(srcPath);
+      outputSelect.forEach((destDir) => {
+        // 只有是目录的才执行...
+        if (window.isDir(destDir)) {
+          const destPath = destDir + seperator + name;
+          // 使用renameFile实现真正的文件移动
+          window.renameFile(srcPath, destPath, (err) => {
+            if (err) {
+              errorCount++;
+              showError(`移动失败: ${err.message}`);
+            } else {
+              successCount++;
+              // 从INPUT中移除
+              const index = INPUT.findIndex((item) => item.path === srcPath);
+              if (index !== -1) {
+                INPUT.splice(index, 1);
+              }
+            }
+            // 所有操作完成后显示结果
+            if (
+              successCount + errorCount ===
+              inputSelect.length * outputSelect.length
+            ) {
+              hideLoading(loading);
+              if (successCount > 0) {
+                showSuccess(`成功移动 ${successCount} 个文件`);
+                // 刷新界面
+                DomCreateing($(".INPUT"), INPUT);
+                DomCreateing($(".OUTPUT"), OUTPUT);
+                // 刷新目标目录的 UI
+                outputSelect.forEach((path) => refreshFolderUI(path));
+              }
+            }
+          });
+        } else {
+          showError(`目标路径不是目录: ${destDir}`);
+        }
+      });
+    });
+  });
+
   // 删除Input\Output中所选文件
   $(".deleteSelected").on("click", function () {
     // 获取不重复的所有所选路径
