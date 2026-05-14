@@ -15,25 +15,33 @@
       </div>
       <div class="INPUT"></div>
     </div>
+
     <div class="actor">
-      <button class="copyToOutput">复制到目标目录 →</button>
-      <button class="moveToOutput" style="color: #fa8c16">移动到目标目录 →</button>
+      <div class="file-actions">
+        <div class="action-title">输入列表 → 目标目录</div>
+        <div class="action-group">
+          <button class="copyToOutput">复制 →</button>
+          <button class="moveToOutput">移动 →</button>
+        </div>
+      </div>
       <button class="openDir">在资源管理器中打开</button>
-      <button class="deleteSelected" style="color: #ff4d4f">
-        彻底删除 (本地文件)
-      </button>
-      <button class="removeDuplicates" style="color: #0617fd">
-        移除重复文件
-      </button>
-      <button class="renameSelected" style="color: #10b834">
-        重命名所选文件
-      </button>
-      <button class="addToInput">← 提取到输入列表</button>
+      <button class="deleteSelected">彻底删除</button>
+      <button class="removeDuplicates">移除重复文件</button>
+      <button class="renameSelected">重命名所选文件</button>
+      <div class="file-actions">
+        <div class="action-title">输入列表 ← 目标目录</div>
+        <div class="action-group">
+          <button class="copyToInput">← 复制</button>
+          <button class="moveToInput">← 移动</button>
+        </div>
+      </div>
     </div>
+
     <div class="outputArea">
       <div class="listTitle">输出列表</div>
       <div class="DRAG output">📂 点击或拖入目标目录至此</div>
       <div class="outputBtn">
+        <button class="addToInput">提取所选到输入列表</button>
         <button class="empty">清空列表</button>
         <button class="remove">移出列表</button>
         <button class="reset">取消选中</button>

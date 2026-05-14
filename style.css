@@ -152,15 +152,97 @@ ul .item:hover {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   min-width: 180px;
 }
 
-.actor button {
+.file-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-actions .action-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  border-left: 4px solid #4a90e2;
+  padding-left: 8px;
+}
+
+.action-group {
+  display: flex;
+  gap: 4px;
+}
+
+.action-group button {
+  flex: 1;
+  padding: 8px 6px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+  border: 1px solid #d0d0d0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.copyToOutput {
+  background: #4a90e2;
+  color: white;
+  border-color: #4a90e2;
+}
+
+.copyToOutput:hover {
+  background: #357abd;
+}
+
+.moveToOutput {
+  background: #fa8c16;
+  color: white;
+  border-color: #fa8c16;
+}
+
+.moveToOutput:hover {
+  background: #e67c00;
+}
+
+.copyToInput {
+  background: #52c41a;
+  color: white;
+  border-color: #52c41a;
+}
+
+.copyToInput:hover {
+  background: #3d991a;
+}
+
+.moveToInput {
+  background: #eb2f96;
+  color: white;
+  border-color: #eb2f96;
+}
+
+.moveToInput:hover {
+  background: #d91f8c;
+}
+
+.actor button:not(.action-group button) {
   width: 100%;
   padding: 10px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   font-weight: bold;
+}
+
+.deleteSelected {
+  color: #ff4d4f;
+}
+
+.removeDuplicates {
+  color: #0617fd;
+}
+
+.renameSelected {
+  color: #10b834;
 }
 
 button {

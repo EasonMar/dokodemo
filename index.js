@@ -797,7 +797,118 @@ function staticDomEventBind() {
     });
   });
 
-  // 删除Input\Output中所选文件
+  // 复制 Output 所选文件到 Input 所选目录
+  $(".copyToInput").on("click", function () {
+    if (outputSelect.length === 0) {
+      showError("请选择要复制的文件");
+      return;
+    }
+    if (inputSelect.length === 0) {
+      showError("请选择目标目录");
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    const loading = showLoading("正在复制文件...");
+
+    outputSelect.forEach((o) => {
+      const name = getNameFromPath(o);
+      inputSelect.forEach((i) => {
+        // 只有是目录的才执行...
+        if (window.isDir(i)) {
+          window.copyTo(o, i + seperator + name, (err) => {
+            if (err) {
+              errorCount++;
+              showError(`复制失败：${err.message}`);
+            } else {
+              successCount++;
+            }
+            // 所有操作完成后显示结果
+            if (
+              successCount + errorCount ===
+              outputSelect.length * inputSelect.length
+            ) {
+              hideLoading(loading);
+              if (successCount > 0) {
+                showSuccess(`成功复制 ${successCount} 个文件`);
+                // 刷新目标目录的 UI
+                inputSelect.forEach((path) => refreshFolderUI(path));
+              }
+            }
+          });
+        } else {
+          showError(`目标路径不是目录：${i}`);
+        }
+      });
+    });
+  });
+
+  // 移动 Output 所选文件到 Input 所选目录（真正的系统级移动）
+  $(".moveToInput").on("click", function () {
+    if (outputSelect.length === 0) {
+      showError("请选择要移动的文件");
+      return;
+    }
+    if (inputSelect.length === 0) {
+      showError("请选择目标目录");
+      return;
+    }
+
+    // 确认移动
+    if (!confirm(`确定要移动 ${outputSelect.length} 个文件吗？此操作将直接移动文件系统中的文件。`)) {
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    const loading = showLoading("正在移动文件...");
+
+    outputSelect.forEach((srcPath) => {
+      const name = getNameFromPath(srcPath);
+      inputSelect.forEach((destDir) => {
+        // 只有是目录的才执行...
+        if (window.isDir(destDir)) {
+          const destPath = destDir + seperator + name;
+          // 使用 renameFile 实现真正的文件移动
+          window.renameFile(srcPath, destPath, (err) => {
+            if (err) {
+              errorCount++;
+              showError(`移动失败：${err.message}`);
+            } else {
+              successCount++;
+              // 从 OUTPUT 中移除
+              const index = OUTPUT.findIndex((item) => item.path === srcPath);
+              if (index !== -1) {
+                OUTPUT.splice(index, 1);
+              }
+            }
+            // 所有操作完成后显示结果
+            if (
+              successCount + errorCount ===
+              outputSelect.length * inputSelect.length
+            ) {
+              hideLoading(loading);
+              if (successCount > 0) {
+                showSuccess(`成功移动 ${successCount} 个文件`);
+                // 刷新界面
+                DomCreateing($(".INPUT"), INPUT);
+                DomCreateing($(".OUTPUT"), OUTPUT);
+                // 刷新目标目录的 UI
+                inputSelect.forEach((path) => refreshFolderUI(path));
+              }
+            }
+          });
+        } else {
+          showError(`目标路径不是目录：${destDir}`);
+        }
+      });
+    });
+  });
+
+  // 删除 Input\Output 中所选文件
   $(".deleteSelected").on("click", function () {
     // 获取不重复的所有所选路径
     let origin = [...outputSelect, ...inputSelect];
