@@ -40,6 +40,33 @@ function hideLoading(loadingElement) {
   }
 }
 
+// 通用移动文件函数（支持跨设备移动）
+function moveFile(srcPath, destPath, callback) {
+  // 先尝试使用 renameFile（同一分区内效率高）
+  window.renameFile(srcPath, destPath, (err) => {
+    if (!err) {
+      // renameFile 成功
+      callback(null);
+    } else {
+      // renameFile 失败，可能是跨分区移动，使用 copy + delete
+      window.copyTo(srcPath, destPath, (copyErr) => {
+        if (copyErr) {
+          callback(copyErr);
+        } else {
+          // 复制成功后删除源文件
+          window.deleteFile(srcPath, (deleteErr) => {
+            if (deleteErr) {
+              callback(deleteErr);
+            } else {
+              callback(null);
+            }
+          });
+        }
+      });
+    }
+  });
+}
+
 const seperator = utools.isWindows() ? "\\" : "/";
 
 // uTools API onPluginEnter(callback)
@@ -761,8 +788,8 @@ function staticDomEventBind() {
         // 只有是目录的才执行...
         if (window.isDir(destDir)) {
           const destPath = destDir + seperator + name;
-          // 使用renameFile实现真正的文件移动
-          window.renameFile(srcPath, destPath, (err) => {
+          // 使用通用移动函数（支持跨设备移动）
+          moveFile(srcPath, destPath, (err) => {
             if (err) {
               errorCount++;
               showError(`移动失败: ${err.message}`);
@@ -872,8 +899,8 @@ function staticDomEventBind() {
         // 只有是目录的才执行...
         if (window.isDir(destDir)) {
           const destPath = destDir + seperator + name;
-          // 使用 renameFile 实现真正的文件移动
-          window.renameFile(srcPath, destPath, (err) => {
+          // 使用通用移动函数（支持跨设备移动）
+          moveFile(srcPath, destPath, (err) => {
             if (err) {
               errorCount++;
               showError(`移动失败：${err.message}`);
