@@ -194,6 +194,25 @@ function getNameFromPath(path) {
   return path.match(nameReg)[1] || "";
 }
 
+// 更新选中项目的序号显示
+function updateSelectionIndices(target) {
+  const selectArray = window[target];
+  const containerClass = target === "inputSelect" ? ".INPUT" : ".OUTPUT";
+  
+  // 先移除所有序号
+  $(containerClass + " .selection-index").remove();
+  
+  // 为每个选中的项目添加序号
+  selectArray.forEach((path, index) => {
+    const encodedPath = encodeURIComponent(path);
+    const $item = $(containerClass + ` .item[path='${encodedPath}']`);
+    if ($item.length > 0) {
+      // 在文件名后面添加序号
+      $item.append(`<span class="selection-index"> [${index + 1}]</span>`);
+    }
+  });
+}
+
 // 更新取消选中按钮的显示状态
 function updateResetButtons() {
   // 更新input取消选中按钮
@@ -220,16 +239,25 @@ function EventBinding($parent) {
     event.stopPropagation(); // 阻止事件冒泡
     const path = decodeURIComponent($(this).attr("path"));
     const selected = $(this).hasClass("selected");
-    $(this).toggleClass("selected");
+    const $this = $(this);
     const target =
-      $(this).closest(".INPUT").length > 0 ? "inputSelect" : "outputSelect";
+      $this.closest(".INPUT").length > 0 ? "inputSelect" : "outputSelect";
+    
     if (selected) {
-      // 消除
+      // 取消勾选
+      $this.removeClass("selected");
       window[target] = window[target].filter((s) => s !== path);
+      // 移除序号显示
+      $this.find(".selection-index").remove();
     } else {
-      // 添加
+      // 添加勾选
+      $this.addClass("selected");
       window[target].push(path);
     }
+    
+    // 更新所有选中项目的序号显示
+    updateSelectionIndices(target);
+    
     // 更新取消选中按钮状态
     updateResetButtons();
   });
@@ -576,6 +604,7 @@ function staticDomEventBind() {
   $(".outputBtn .reset").on("click", function () {
     outputSelect = [];
     $(".OUTPUT .selected").removeClass("selected");
+    $(".OUTPUT .selection-index").remove();
     // 更新取消选中按钮状态
     updateResetButtons();
   });
@@ -634,6 +663,7 @@ function staticDomEventBind() {
   $(".inputBtn .reset").on("click", function () {
     inputSelect = [];
     $(".INPUT .selected").removeClass("selected");
+    $(".INPUT .selection-index").remove();
     // 更新取消选中按钮状态
     updateResetButtons();
   });
