@@ -128,7 +128,7 @@ function getSubData(dir) {
     const subItem = window.readDir(dir);
     subItem.forEach((item) => {
       const path = dir + seperator + item;
-      children.push({ name: item, path });
+      children.push({ name: item, path, isDir: window.isDir(path) });
     });
     return children;
   } catch (err) {
@@ -210,6 +210,13 @@ function refreshFolderUI(path) {
       const $sub = $(generateList(children, isInput));
       $parentLi.append($sub);
       EventBinding($sub);
+
+      // 3. 递归刷新所有已展开的子文件夹
+      children.forEach((child) => {
+        if (child.isDir) {
+          refreshFolderUI(child.path);
+        }
+      });
     }
   });
 }
@@ -238,6 +245,16 @@ function updateSelectionIndices(target) {
       $item.append(`<span class="selection-index"> [${index + 1}]</span>`);
     }
   });
+}
+
+// 取消所有选中状态
+function clearAllSelection() {
+  inputSelect = [];
+  outputSelect = [];
+  $(".INPUT .selected").removeClass("selected");
+  $(".OUTPUT .selected").removeClass("selected");
+  $(".selection-index").remove();
+  updateResetButtons();
 }
 
 // 更新取消选中按钮的显示状态
@@ -740,6 +757,12 @@ function staticDomEventBind() {
               showError(`复制失败: ${err.message}`);
             } else {
               successCount++;
+              // 添加到OUTPUT数组
+              const name = getNameFromPath(srcPath);
+              const destPath = o + seperator + name;
+              if (!OUTPUT.some((item) => item.path === destPath)) {
+                OUTPUT.push({ name, path: destPath });
+              }
             }
             // 所有操作完成后显示结果
             if (
@@ -752,6 +775,8 @@ function staticDomEventBind() {
                 // 刷新目标目录的 UI，确保展开的文件夹内容能及时更新
                 outputSelect.forEach((path) => refreshFolderUI(path));
               }
+              // 取消所有选中状态
+              clearAllSelection();
             }
           });
         } else {
@@ -761,7 +786,7 @@ function staticDomEventBind() {
     });
   });
 
-  // 移动Input所选文件到Output所选目录（真正的系统级移动）
+  // 移动 Input 所选文件到 Output 所选目录（真正的系统级移动）
   $(".moveToOutput").on("click", function () {
     if (inputSelect.length === 0) {
       showError("请选择要移动的文件");
@@ -796,10 +821,18 @@ function staticDomEventBind() {
             } else {
               successCount++;
               // 从INPUT中移除
-              const index = INPUT.findIndex((item) => item.path === srcPath);
-              if (index !== -1) {
-                INPUT.splice(index, 1);
+              const inputIndex = INPUT.findIndex((item) => item.path === srcPath);
+              if (inputIndex !== -1) {
+                INPUT.splice(inputIndex, 1);
               }
+              // 添加到OUTPUT数组
+              const name = getNameFromPath(srcPath);
+              outputSelect.forEach((destDir) => {
+                const destPath = destDir + seperator + name;
+                if (!OUTPUT.some((item) => item.path === destPath)) {
+                  OUTPUT.push({ name, path: destPath });
+                }
+              });
             }
             // 所有操作完成后显示结果
             if (
@@ -809,12 +842,17 @@ function staticDomEventBind() {
               hideLoading(loading);
               if (successCount > 0) {
                 showSuccess(`成功移动 ${successCount} 个文件`);
-                // 刷新界面
-                DomCreateing($(".INPUT"), INPUT);
-                DomCreateing($(".OUTPUT"), OUTPUT);
-                // 刷新目标目录的 UI
-                outputSelect.forEach((path) => refreshFolderUI(path));
+                // 刷新源目录（文件被移走）和目标目录（文件被移入），保持展开状态
+                inputSelect.forEach((srcPath) => {
+                  const srcDir = srcPath.substring(0, srcPath.lastIndexOf(seperator));
+                  refreshFolderUI(srcDir);
+                });
+                outputSelect.forEach((destDir) => {
+                  refreshFolderUI(destDir);
+                });
               }
+              // 取消所有选中状态
+              clearAllSelection();
             }
           });
         } else {
@@ -851,6 +889,11 @@ function staticDomEventBind() {
               showError(`复制失败：${err.message}`);
             } else {
               successCount++;
+              // 添加到INPUT数组
+              const destPath = i + seperator + name;
+              if (!INPUT.some((item) => item.path === destPath)) {
+                INPUT.push({ name, path: destPath });
+              }
             }
             // 所有操作完成后显示结果
             if (
@@ -863,6 +906,8 @@ function staticDomEventBind() {
                 // 刷新目标目录的 UI
                 inputSelect.forEach((path) => refreshFolderUI(path));
               }
+              // 取消所有选中状态
+              clearAllSelection();
             }
           });
         } else {
@@ -907,10 +952,18 @@ function staticDomEventBind() {
             } else {
               successCount++;
               // 从 OUTPUT 中移除
-              const index = OUTPUT.findIndex((item) => item.path === srcPath);
-              if (index !== -1) {
-                OUTPUT.splice(index, 1);
+              const outputIndex = OUTPUT.findIndex((item) => item.path === srcPath);
+              if (outputIndex !== -1) {
+                OUTPUT.splice(outputIndex, 1);
               }
+              // 添加到INPUT数组
+              const name = getNameFromPath(srcPath);
+              inputSelect.forEach((destDir) => {
+                const destPath = destDir + seperator + name;
+                if (!INPUT.some((item) => item.path === destPath)) {
+                  INPUT.push({ name, path: destPath });
+                }
+              });
             }
             // 所有操作完成后显示结果
             if (
@@ -920,12 +973,17 @@ function staticDomEventBind() {
               hideLoading(loading);
               if (successCount > 0) {
                 showSuccess(`成功移动 ${successCount} 个文件`);
-                // 刷新界面
-                DomCreateing($(".INPUT"), INPUT);
-                DomCreateing($(".OUTPUT"), OUTPUT);
-                // 刷新目标目录的 UI
-                inputSelect.forEach((path) => refreshFolderUI(path));
+                // 刷新源目录（文件被移走）和目标目录（文件被移入），保持展开状态
+                outputSelect.forEach((srcPath) => {
+                  const srcDir = srcPath.substring(0, srcPath.lastIndexOf(seperator));
+                  refreshFolderUI(srcDir);
+                });
+                inputSelect.forEach((destDir) => {
+                  refreshFolderUI(destDir);
+                });
               }
+              // 取消所有选中状态
+              clearAllSelection();
             }
           });
         } else {
