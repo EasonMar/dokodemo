@@ -1068,6 +1068,68 @@ function staticDomEventBind() {
       true,
     );
   });
+
+  // 对话框拖动功能
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  // 鼠标按下事件
+  $(document).on("mousedown", ".dialog-content", function (e) {
+    // 只允许点击标题区域拖动
+    if ($(e.target).closest("button, input, textarea").length > 0) {
+      return;
+    }
+
+    isDragging = true;
+    const $content = $(this);
+    const dialogRect = $content[0].getBoundingClientRect();
+    
+    // 计算鼠标相对于对话框左上角的偏移
+    offsetX = e.clientX - dialogRect.left;
+    offsetY = e.clientY - dialogRect.top;
+    
+    $content.addClass("dragging");
+  });
+
+  // 鼠标移动事件
+  $(document).on("mousemove", function (e) {
+    if (!isDragging) return;
+    
+    const $content = $(".dialog-content.dragging");
+    if ($content.length === 0) {
+      isDragging = false;
+      return;
+    }
+    
+    // 计算新位置
+    const windowWidth = $(window).width();
+    const windowHeight = $(window).height();
+    const contentWidth = $content.width();
+    const contentHeight = $content.height();
+    
+    let newLeft = e.clientX - offsetX;
+    let newTop = e.clientY - offsetY;
+    
+    // 限制在窗口范围内
+    newLeft = Math.max(0, Math.min(newLeft, windowWidth - contentWidth));
+    newTop = Math.max(0, Math.min(newTop, windowHeight - contentHeight));
+    
+    // 更新位置
+    $content.css({
+      left: newLeft + "px",
+      top: newTop + "px",
+      transform: "none"
+    });
+  });
+
+  // 鼠标松开事件
+  $(document).on("mouseup", function () {
+    if (isDragging) {
+      $(".dialog-content").removeClass("dragging");
+      isDragging = false;
+    }
+  });
 }
 
 staticDomEventBind();
