@@ -712,6 +712,11 @@ function staticDomEventBind() {
     updateResetButtons();
   });
 
+  // 取消所有选中
+  $(".resetAll").on("click", function () {
+    clearAllSelection();
+  });
+
   // 移动Output所选到Input
   $(".addToInput").on("click", function () {
     // 需要根据 path 创建 data Object
@@ -758,7 +763,7 @@ function staticDomEventBind() {
             } else {
               successCount++;
               // 添加到OUTPUT数组
-              const name = getNameFromPath(srcPath);
+              const name = getNameFromPath(i);
               const destPath = o + seperator + name;
               if (!OUTPUT.some((item) => item.path === destPath)) {
                 OUTPUT.push({ name, path: destPath });
