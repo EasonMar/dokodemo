@@ -362,6 +362,7 @@ function hideRenameDialog() {
   $(".regex-only").hide();
   $(".direct-only").hide();
   $(".index-only").show();
+  clearAllSelection();
 }
 
 function updateRenamePreview() {
@@ -700,6 +701,8 @@ function staticDomEventBind() {
         targetPath = path.substring(0, path.lastIndexOf(seperator));
       }
       utools.shellOpenPath(targetPath);
+      // 清空选择
+      clearAllSelection();
     });
   });
 
@@ -1261,6 +1264,7 @@ function hideDuplicateDialog() {
   $("#duplicateDialog").hide();
   $("#duplicateResults").html("");
   $("#scanPath").val("");
+  clearAllSelection();
 }
 
 // 解析文件名，去除末尾的所有 (n) 序号（支持多层嵌套）
