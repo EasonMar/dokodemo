@@ -277,8 +277,34 @@ function updateResetButtons() {
 }
 
 // Event Binding
+// 记录上次点击的路径，用于Shift+点击连续选择
+let lastClickPath = null;
+
 function EventBinding($parent) {
   const $container = $parent || $(".window");
+
+  // 点击空白处取消所有选择
+  $container.click(function (event) {
+    if (
+      $(event.target).hasClass("window") ||
+      $(event.target).hasClass("INPUT") ||
+      $(event.target).hasClass("OUTPUT")
+    ) {
+      // 点击容器空白处，取消所有选中
+      if (inputSelect.length > 0) {
+        inputSelect = [];
+        $(".INPUT .selected").removeClass("selected");
+        $(".INPUT .selection-index").remove();
+      }
+      if (outputSelect.length > 0) {
+        outputSelect = [];
+        $(".OUTPUT .selected").removeClass("selected");
+        $(".OUTPUT .selection-index").remove();
+      }
+      updateResetButtons();
+    }
+  });
+
   $container.find(".item").click(function (event) {
     event.stopPropagation(); // 阻止事件冒泡
     const path = decodeURIComponent($(this).attr("path"));
@@ -286,24 +312,82 @@ function EventBinding($parent) {
     const $this = $(this);
     const target =
       $this.closest(".INPUT").length > 0 ? "inputSelect" : "outputSelect";
-    
-    if (selected) {
-      // 取消勾选
-      $this.removeClass("selected");
-      window[target] = window[target].filter((s) => s !== path);
-      // 移除序号显示
-      $this.find(".selection-index").remove();
-    } else {
-      // 添加勾选
-      $this.addClass("selected");
-      window[target].push(path);
+    const selectArray = window[target];
+    const containerClass = target === "inputSelect" ? ".INPUT" : ".OUTPUT";
+
+    // Ctrl+点击：切换单个选择状态
+    if (event.ctrlKey || event.metaKey) {
+      if (selected) {
+        // 取消勾选
+        $this.removeClass("selected");
+        window[target] = selectArray.filter((s) => s !== path);
+      } else {
+        // 添加勾选
+        $this.addClass("selected");
+        window[target] = [...selectArray, path];
+      }
+      lastClickPath = path;
     }
-    
+    // Shift+点击：连续选择
+    else if (event.shiftKey && lastClickPath && lastClickPath !== path) {
+      const $items = $(containerClass + " .item");
+      const currentIndex = $items.index($this);
+
+      // 找到上次点击的元素索引
+      let lastIndex = -1;
+      $items.each(function (i) {
+        if (decodeURIComponent($(this).attr("path")) === lastClickPath) {
+          lastIndex = i;
+          return false;
+        }
+      });
+
+      if (lastIndex !== -1) {
+        const start = Math.min(lastIndex, currentIndex);
+        const end = Math.max(lastIndex, currentIndex);
+
+        // 先取消所有选中
+        window[target] = [];
+        $(containerClass + " .selected").removeClass("selected");
+
+        // 选中范围内的所有项目
+        $items.slice(start, end + 1).each(function () {
+          const itemPath = decodeURIComponent($(this).attr("path"));
+          $(this).addClass("selected");
+          window[target].push(itemPath);
+        });
+      }
+    }
+    // 普通点击：单选（取消其他选中）
+    else {
+      if (selected) {
+        // 取消勾选
+        $this.removeClass("selected");
+        window[target] = selectArray.filter((s) => s !== path);
+      } else {
+        // 取消其他选中，只选中当前
+        $(containerClass + " .selected").removeClass("selected");
+        window[target] = [path];
+        $this.addClass("selected");
+      }
+      lastClickPath = path;
+    }
+
     // 更新所有选中项目的序号显示
     updateSelectionIndices(target);
-    
+
     // 更新取消选中按钮状态
     updateResetButtons();
+  });
+
+  // 双击打开文件夹
+  $container.find(".item").dblclick(function (event) {
+    event.stopPropagation();
+    const path = decodeURIComponent($(this).attr("path"));
+    if (window.isDir(path)) {
+      // 模拟点击展开按钮
+      $(this).find(".expand").click();
+    }
   });
 
   $container.find(".expand").click(function (event) {
