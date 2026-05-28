@@ -232,10 +232,10 @@ function getNameFromPath(path) {
 function updateSelectionIndices(target) {
   const selectArray = window[target];
   const containerClass = target === "inputSelect" ? ".INPUT" : ".OUTPUT";
-  
+
   // 先移除所有序号
   $(containerClass + " .selection-index").remove();
-  
+
   // 为每个选中的项目添加序号
   selectArray.forEach((path, index) => {
     const encodedPath = encodeURIComponent(path);
@@ -281,12 +281,12 @@ function updateResetButtons() {
 let lastClickPath = null;
 
 function EventBinding($parent) {
-  const $container = $parent || $(".window");
+  const $container = $parent || $("body");
 
   // 点击空白处取消所有选择
   $container.click(function (event) {
     if (
-      $(event.target).hasClass("window") ||
+      $(event.target).is("body") ||
       $(event.target).hasClass("INPUT") ||
       $(event.target).hasClass("OUTPUT")
     ) {
@@ -503,7 +503,7 @@ function updateRenamePreview() {
         newFileName = `${num}${match[2]}${match[3]}`;
       } else {
         // 如果没有序号，直接加在前面
-        newFileName = `${num}、${oldName}`;
+        newFileName = `${num}-${oldName}`;
       }
     }
 
@@ -579,7 +579,7 @@ function executeRename() {
       if (match) {
         newFileName = `${num}${match[2]}${match[3]}`;
       } else {
-        newFileName = `${num}、${oldName}`;
+        newFileName = `${num}-${oldName}`;
       }
     }
 
@@ -890,7 +890,11 @@ function staticDomEventBind() {
     }
 
     // 确认移动
-    if (!confirm(`确定要移动 ${inputSelect.length} 个文件吗？此操作将直接移动文件系统中的文件。`)) {
+    if (
+      !confirm(
+        `确定要移动 ${inputSelect.length} 个文件吗？此操作将直接移动文件系统中的文件。`,
+      )
+    ) {
       return;
     }
 
@@ -913,7 +917,9 @@ function staticDomEventBind() {
             } else {
               successCount++;
               // 从INPUT中移除
-              const inputIndex = INPUT.findIndex((item) => item.path === srcPath);
+              const inputIndex = INPUT.findIndex(
+                (item) => item.path === srcPath,
+              );
               if (inputIndex !== -1) {
                 INPUT.splice(inputIndex, 1);
               }
@@ -936,7 +942,10 @@ function staticDomEventBind() {
                 showSuccess(`成功移动 ${successCount} 个文件`);
                 // 刷新源目录（文件被移走）和目标目录（文件被移入），保持展开状态
                 inputSelect.forEach((srcPath) => {
-                  const srcDir = srcPath.substring(0, srcPath.lastIndexOf(seperator));
+                  const srcDir = srcPath.substring(
+                    0,
+                    srcPath.lastIndexOf(seperator),
+                  );
                   refreshFolderUI(srcDir);
                 });
                 outputSelect.forEach((destDir) => {
@@ -1021,7 +1030,11 @@ function staticDomEventBind() {
     }
 
     // 确认移动
-    if (!confirm(`确定要移动 ${outputSelect.length} 个文件吗？此操作将直接移动文件系统中的文件。`)) {
+    if (
+      !confirm(
+        `确定要移动 ${outputSelect.length} 个文件吗？此操作将直接移动文件系统中的文件。`,
+      )
+    ) {
       return;
     }
 
@@ -1044,7 +1057,9 @@ function staticDomEventBind() {
             } else {
               successCount++;
               // 从 OUTPUT 中移除
-              const outputIndex = OUTPUT.findIndex((item) => item.path === srcPath);
+              const outputIndex = OUTPUT.findIndex(
+                (item) => item.path === srcPath,
+              );
               if (outputIndex !== -1) {
                 OUTPUT.splice(outputIndex, 1);
               }
@@ -1067,7 +1082,10 @@ function staticDomEventBind() {
                 showSuccess(`成功移动 ${successCount} 个文件`);
                 // 刷新源目录（文件被移走）和目标目录（文件被移入），保持展开状态
                 outputSelect.forEach((srcPath) => {
-                  const srcDir = srcPath.substring(0, srcPath.lastIndexOf(seperator));
+                  const srcDir = srcPath.substring(
+                    0,
+                    srcPath.lastIndexOf(seperator),
+                  );
                   refreshFolderUI(srcDir);
                 });
                 inputSelect.forEach((destDir) => {
@@ -1199,7 +1217,7 @@ function staticDomEventBind() {
     }
 
     // 用逗号分隔所有文件名
-    const textToCopy = newNames.join(", ");
+    const textToCopy = newNames.join("\n");
 
     // 复制到剪贴板
     navigator.clipboard
@@ -1261,42 +1279,42 @@ function staticDomEventBind() {
     isDragging = true;
     const $content = $(this);
     const dialogRect = $content[0].getBoundingClientRect();
-    
+
     // 计算鼠标相对于对话框左上角的偏移
     offsetX = e.clientX - dialogRect.left;
     offsetY = e.clientY - dialogRect.top;
-    
+
     $content.addClass("dragging");
   });
 
   // 鼠标移动事件
   $(document).on("mousemove", function (e) {
     if (!isDragging) return;
-    
+
     const $content = $(".dialog-content.dragging");
     if ($content.length === 0) {
       isDragging = false;
       return;
     }
-    
+
     // 计算新位置
     const windowWidth = $(window).width();
     const windowHeight = $(window).height();
     const contentWidth = $content.width();
     const contentHeight = $content.height();
-    
+
     let newLeft = e.clientX - offsetX;
     let newTop = e.clientY - offsetY;
-    
+
     // 限制在窗口范围内
     newLeft = Math.max(0, Math.min(newLeft, windowWidth - contentWidth));
     newTop = Math.max(0, Math.min(newTop, windowHeight - contentHeight));
-    
+
     // 更新位置
     $content.css({
       left: newLeft + "px",
       top: newTop + "px",
-      transform: "none"
+      transform: "none",
     });
   });
 
