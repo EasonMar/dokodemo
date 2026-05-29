@@ -587,11 +587,11 @@ button:active {
 
 /* 文件数量样式 */
 .file-count {
-  font-weight: bold;
   font-weight: 400;
   display: inline-block;
   transition: all 0.2s ease;
-  margin: 0 4px 0 -6px;
+  font-size: 10px;
+  margin-left: 4px;
 }
 
 /* 重复文件对话框样式 */

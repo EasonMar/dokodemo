@@ -137,21 +137,24 @@ function getSubData(dir) {
   }
 }
 
-// 计算目录中文件数量（不包括子目录）
+// 计算目录中文件和文件夹数量
 function countFilesInDir(dir) {
   try {
     const items = window.readDir(dir);
-    let count = 0;
+    let fileCount = 0;
+    let folderCount = 0;
     items.forEach((item) => {
       const itemPath = dir + seperator + item;
-      if (!window.isDir(itemPath)) {
-        count++;
+      if (window.isDir(itemPath)) {
+        folderCount++;
+      } else {
+        fileCount++;
       }
     });
-    return count;
+    return { fileCount, folderCount };
   } catch (err) {
     console.log(err);
-    return 0;
+    return { fileCount: 0, folderCount: 0 };
   }
 }
 
@@ -167,8 +170,20 @@ function generateList(data, isInput = false) {
 
     let folderCount = "";
     if (isFolder) {
-      const fileCount = countFilesInDir(item.path);
-      folderCount = `<span class="file-count">(${fileCount})</span>`;
+      const { fileCount, folderCount: subFolderCount } = countFilesInDir(
+        item.path,
+      );
+      // 只显示非零的数量
+      const parts = [];
+      if (fileCount > 0) {
+        parts.push(`${fileCount} files`);
+      }
+      if (subFolderCount > 0) {
+        parts.push(`${subFolderCount} folders`);
+      }
+      if (parts.length > 0) {
+        folderCount = `<span class="file-count">[ ${parts.join(", ")} ]</span>`;
+      }
     }
 
     // 检查是否在选择数组中
@@ -178,7 +193,7 @@ function generateList(data, isInput = false) {
 
     result += `<li ${
       isFolder ? 'class="folder"' : '""'
-    }><div class="item ${selectedClass}" path="${path}">${expendTag}${folderCount}${item.name}</div>`;
+    }><div class="item ${selectedClass}" path="${path}">${expendTag}${item.name}${folderCount}</div>`;
     if (item.children) {
       result += generateList(item.children, isInput);
     }
@@ -199,8 +214,18 @@ function refreshFolderUI(path) {
     const $expand = $item.find(".expand");
 
     // 1. 更新文件数量
-    const fileCount = countFilesInDir(path);
-    $item.find(".file-count").text(`(${fileCount})`);
+    const { fileCount, folderCount: subFolderCount } = countFilesInDir(path);
+    // 只显示非零的数量
+    const parts = [];
+    if (fileCount > 0) {
+      parts.push(`${fileCount} files`);
+    }
+    if (subFolderCount > 0) {
+      parts.push(`${subFolderCount} folders`);
+    }
+    $item
+      .find(".file-count")
+      .text(parts.length > 0 ? `[ ${parts.join(", ")} ]` : "");
 
     // 2. 如果已展开，刷新子列表内容
     if ($expand.text() === "-") {
