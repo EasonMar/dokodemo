@@ -223,9 +223,13 @@ function refreshFolderUI(path) {
     if (subFolderCount > 0) {
       parts.push(`${subFolderCount} folders`);
     }
-    $item
-      .find(".file-count")
-      .text(parts.length > 0 ? `[ ${parts.join(", ")} ]` : "");
+    let $fileCount = $item.find(".file-count");
+    if ($fileCount.length === 0) {
+      // 如果 .file-count 元素不存在，创建它
+      $fileCount = $(`<span class="file-count"></span>`);
+      $item.append($fileCount);
+    }
+    $fileCount.text(parts.length > 0 ? `[ ${parts.join(", ")} ]` : "");
 
     // 2. 如果已展开，刷新子列表内容
     if ($expand.text() === "-") {
@@ -626,6 +630,12 @@ function executeRename() {
             INPUT[index].name = newFileName;
             INPUT[index].path = newPath;
           }
+          // 更新所有子文件和子文件夹的路径
+          INPUT.forEach((item) => {
+            if (item.path.startsWith(oldPath + seperator)) {
+              item.path = item.path.replace(oldPath, newPath);
+            }
+          });
         }
         if (outputSelect.includes(oldPath)) {
           const index = OUTPUT.findIndex((item) => item.path === oldPath);
@@ -633,6 +643,12 @@ function executeRename() {
             OUTPUT[index].name = newFileName;
             OUTPUT[index].path = newPath;
           }
+          // 更新所有子文件和子文件夹的路径
+          OUTPUT.forEach((item) => {
+            if (item.path.startsWith(oldPath + seperator)) {
+              item.path = item.path.replace(oldPath, newPath);
+            }
+          });
         }
       }
 
