@@ -935,8 +935,20 @@ function staticDomEventBind() {
               // 添加到OUTPUT数组
               const name = getNameFromPath(i);
               const destPath = o + seperator + name;
-              if (!OUTPUT.some((item) => item.path === destPath)) {
-                OUTPUT.push({ name, path: destPath });
+              // 检查目标目录是否是OUTPUT中某个文件夹的子目录
+              const isSubItem = OUTPUT.some((item) =>
+                destPath.startsWith(item.path + seperator),
+              );
+              // 只有当目标目录不在OUTPUT中任何文件夹下时，才添加到OUTPUT数组
+              if (
+                !isSubItem &&
+                !OUTPUT.some((item) => item.path === destPath)
+              ) {
+                OUTPUT.push({
+                  name,
+                  path: destPath,
+                  isDir: window.isDir(destPath),
+                });
               }
             }
             // 所有操作完成后显示结果
@@ -1010,8 +1022,20 @@ function staticDomEventBind() {
               const name = getNameFromPath(srcPath);
               outputSelect.forEach((destDir) => {
                 const destPath = destDir + seperator + name;
-                if (!OUTPUT.some((item) => item.path === destPath)) {
-                  OUTPUT.push({ name, path: destPath });
+                // 检查目标目录是否是OUTPUT中某个文件夹的子目录
+                const isSubItem = OUTPUT.some((item) =>
+                  destPath.startsWith(item.path + seperator),
+                );
+                // 只有当目标目录不在OUTPUT中任何文件夹下时，才添加到OUTPUT数组
+                if (
+                  !isSubItem &&
+                  !OUTPUT.some((item) => item.path === destPath)
+                ) {
+                  OUTPUT.push({
+                    name,
+                    path: destPath,
+                    isDir: window.isDir(destPath),
+                  });
                 }
               });
             }
@@ -1075,8 +1099,17 @@ function staticDomEventBind() {
               successCount++;
               // 添加到INPUT数组
               const destPath = i + seperator + name;
-              if (!INPUT.some((item) => item.path === destPath)) {
-                INPUT.push({ name, path: destPath });
+              // 检查目标目录是否是INPUT中某个文件夹的子目录
+              const isSubItem = INPUT.some((item) =>
+                destPath.startsWith(item.path + seperator),
+              );
+              // 只有当目标目录不在INPUT中任何文件夹下时，才添加到INPUT数组
+              if (!isSubItem && !INPUT.some((item) => item.path === destPath)) {
+                INPUT.push({
+                  name,
+                  path: destPath,
+                  isDir: window.isDir(destPath),
+                });
               }
             }
             // 所有操作完成后显示结果
@@ -1150,8 +1183,20 @@ function staticDomEventBind() {
               const name = getNameFromPath(srcPath);
               inputSelect.forEach((destDir) => {
                 const destPath = destDir + seperator + name;
-                if (!INPUT.some((item) => item.path === destPath)) {
-                  INPUT.push({ name, path: destPath });
+                // 检查目标目录是否是INPUT中某个文件夹的子目录
+                const isSubItem = INPUT.some((item) =>
+                  destPath.startsWith(item.path + seperator),
+                );
+                // 只有当目标目录不在INPUT中任何文件夹下时，才添加到INPUT数组
+                if (
+                  !isSubItem &&
+                  !INPUT.some((item) => item.path === destPath)
+                ) {
+                  INPUT.push({
+                    name,
+                    path: destPath,
+                    isDir: window.isDir(destPath),
+                  });
                 }
               });
             }
