@@ -1,4 +1,5 @@
 const fs = require("fs");
+const path = require("path");
 
 window.readDir = function (path) {
   try {
@@ -31,16 +32,64 @@ window.getFileSize = function (path) {
 };
 
 window.copyTo = function (source, dest, callback) {
-  // copyFile('source.txt', 'destination.txt', callback);
-  fs.copyFile(source, dest, (err) => {
-    if (err) {
-      console.error("复制文件失败:", err);
-      if (callback) callback(err);
+  try {
+    const stat = fs.statSync(source);
+    
+    if (stat.isDirectory()) {
+      // 复制目录
+      if (!fs.existsSync(dest)) {
+        fs.mkdirSync(dest, { recursive: true });
+      }
+      
+      const items = fs.readdirSync(source);
+      let completed = 0;
+      let callbackCalled = false;
+      
+      if (items.length === 0) {
+        console.log("空目录复制成功");
+        if (callback) callback(null);
+        return;
+      }
+      
+      items.forEach((item) => {
+        const srcPath = path.join(source, item);
+        const destPath = path.join(dest, item);
+        
+        window.copyTo(srcPath, destPath, (err) => {
+          completed++;
+          if (err && !callbackCalled) {
+            callbackCalled = true;
+            console.error("复制目录失败:", err);
+            if (callback) callback(err);
+          } else if (completed === items.length && !callbackCalled) {
+            callbackCalled = true;
+            console.log("目录复制成功");
+            if (callback) callback(null);
+          }
+        });
+      });
     } else {
-      console.log("文件复制成功");
-      if (callback) callback(null);
+      // 复制文件
+      // 确保目标目录存在
+      const destDir = path.dirname(dest);
+      if (destDir && !fs.existsSync(destDir)) {
+        fs.mkdirSync(destDir, { recursive: true });
+      }
+      
+      fs.copyFile(source, dest, (err) => {
+        if (err) {
+          console.error("复制文件失败:", err);
+          if (callback) callback(err);
+        } else {
+          console.log("文件复制成功");
+          if (callback) callback(null);
+        }
+      });
     }
-  });
+  } catch (err) {
+    console.error("复制操作失败:", err);
+    if (callback) callback(err);
+  }
 };
 
 window.deleteFile = function (target, callback) {
