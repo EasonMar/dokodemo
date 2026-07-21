@@ -121,6 +121,40 @@ function DomCreateing($Container, data) {
   EventBinding($Container);
 }
 
+// 自然排序比较函数（按文件名中的数字大小排序）
+function naturalSortCompare(a, b) {
+  const nameA = a.name.toLowerCase();
+  const nameB = b.name.toLowerCase();
+  
+  // 分割成数字和非数字部分
+  const partsA = nameA.split(/(\d+)/);
+  const partsB = nameB.split(/(\d+)/);
+  
+  const len = Math.min(partsA.length, partsB.length);
+  for (let i = 0; i < len; i++) {
+    const partA = partsA[i];
+    const partB = partsB[i];
+    
+    // 如果都是数字，按数值比较
+    const numA = parseInt(partA, 10);
+    const numB = parseInt(partB, 10);
+    
+    if (!isNaN(numA) && !isNaN(numB)) {
+      if (numA !== numB) {
+        return numA - numB;
+      }
+    } else {
+      // 否则按字符串比较
+      if (partA !== partB) {
+        return partA.localeCompare(partB);
+      }
+    }
+  }
+  
+  // 如果前面部分都相同，较短的排前面
+  return partsA.length - partsB.length;
+}
+
 // 获取子目录
 function getSubData(dir) {
   try {
@@ -129,6 +163,14 @@ function getSubData(dir) {
     subItem.forEach((item) => {
       const path = dir + seperator + item;
       children.push({ name: item, path, isDir: window.isDir(path) });
+    });
+    // 按自然排序排序：文件夹在前，文件在后；同类型按文件名自然排序
+    children.sort((a, b) => {
+      // 文件夹优先
+      if (a.isDir && !b.isDir) return -1;
+      if (!a.isDir && b.isDir) return 1;
+      // 同类型按自然排序
+      return naturalSortCompare(a, b);
     });
     return children;
   } catch (err) {
