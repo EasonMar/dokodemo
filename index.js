@@ -113,6 +113,11 @@ var OUTPUT = [];
 var inputSelect = [];
 var outputSelect = [];
 
+// 自动刷新相关变量
+let autoRefreshEnabled = true;
+let autoRefreshInterval = null;
+let AUTO_REFRESH_INTERVAL = 5000; // 默认5秒
+
 // Dom Creating ———— 遍历dir树 ———— 直接用 ElementUI 的树形控件吧
 function DomCreateing($Container, data) {
   const isInput = $Container.hasClass("INPUT");
@@ -254,6 +259,11 @@ function refreshFolderUI(path) {
     const $item = $(this);
     const $parentLi = $item.parent();
     const $expand = $item.find(".expand");
+    const isInput = $item.closest(".INPUT").length > 0;
+
+    // 保存当前选中状态
+    const target = isInput ? "inputSelect" : "outputSelect";
+    const selectArray = window[target];
 
     // 1. 更新文件数量
     const { fileCount, folderCount: subFolderCount } = countFilesInDir(path);
@@ -275,12 +285,34 @@ function refreshFolderUI(path) {
 
     // 2. 如果已展开，刷新子列表内容
     if ($expand.text() === "-") {
+      // 收集当前所有选中项（包含本文件夹下的和子文件夹下的）
+      const selectedPaths = [];
+      selectArray.forEach(selectedPath => {
+        if (selectedPath.startsWith(path + seperator) || selectedPath === path) {
+          selectedPaths.push(selectedPath);
+        }
+      });
+
       $parentLi.find("> ul").remove();
       const children = getSubData(path);
-      const isInput = $parentLi.closest(".INPUT").length > 0;
       const $sub = $(generateList(children, isInput));
       $parentLi.append($sub);
+
+      // 重新绑定事件
       EventBinding($sub);
+
+      // 恢复选中状态
+      const containerClass = isInput ? ".INPUT" : ".OUTPUT";
+      selectedPaths.forEach(selectedPath => {
+        const encodedPath = encodeURIComponent(selectedPath);
+        const $item = $(containerClass + ` .item[path='${encodedPath}']`);
+        if ($item.length > 0 && selectArray.includes(selectedPath)) {
+          $item.addClass("selected");
+        }
+      });
+
+      // 更新选中序号显示
+      updateSelectionIndices(target);
 
       // 3. 递归刷新所有已展开的子文件夹
       children.forEach((child) => {
@@ -711,6 +743,79 @@ function executeRename() {
       }
     });
   });
+}
+
+// 一键刷新所有已展开的文件夹
+function refreshAllFolders(showMessage = true) {
+  if (showMessage) {
+    loadingElement = showLoading("正在刷新...");
+  }
+  
+  // 收集所有已展开的文件夹路径
+  const expandedFolders = [];
+  
+  $(".INPUT .expand").each(function() {
+    if ($(this).text() === "-") {
+      const path = decodeURIComponent($(this).attr("path"));
+      expandedFolders.push({ path, type: 'INPUT' });
+    }
+  });
+  
+  $(".OUTPUT .expand").each(function() {
+    if ($(this).text() === "-") {
+      const path = decodeURIComponent($(this).attr("path"));
+      expandedFolders.push({ path, type: 'OUTPUT' });
+    }
+  });
+  
+  // 刷新所有已展开的文件夹
+  expandedFolders.forEach(folder => {
+    refreshFolderUI(folder.path);
+  });
+  
+  if (showMessage) {
+    hideLoading(loadingElement);
+    if (expandedFolders.length > 0) {
+      showSuccess(`已刷新 ${expandedFolders.length} 个文件夹`);
+    }
+  }
+}
+
+// 启动自动刷新
+function startAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+  }
+
+  if (autoRefreshEnabled) {
+    autoRefreshInterval = setInterval(() => {
+      refreshAllFolders(false);
+    }, AUTO_REFRESH_INTERVAL);
+  }
+}
+
+// 停止自动刷新
+function stopAutoRefresh() {
+  if (autoRefreshInterval) {
+    clearInterval(autoRefreshInterval);
+    autoRefreshInterval = null;
+  }
+}
+
+// 切换自动刷新状态
+function toggleAutoRefresh(enabled) {
+  autoRefreshEnabled = enabled;
+
+  // 保存开关状态
+  localStorage.setItem('autoRefreshEnabled', enabled);
+
+  if (enabled) {
+    startAutoRefresh();
+    showSuccess("自动刷新已开启");
+  } else {
+    stopAutoRefresh();
+    showSuccess("自动刷新已关闭");
+  }
 }
 
 function staticDomEventBind() {
@@ -1452,6 +1557,54 @@ function staticDomEventBind() {
       true,
     );
   });
+
+  // 一键刷新按钮
+  $(".refreshAll").on("click", function () {
+    refreshAllFolders();
+  });
+
+  // 自动刷新开关
+  $("#autoRefreshToggle").on("change", function () {
+    const enabled = $(this).prop("checked");
+    toggleAutoRefresh(enabled);
+  });
+
+  // 刷新间隔设置
+  $("#refreshInterval").on("change", function () {
+    const interval = parseInt($(this).val());
+
+    if (isNaN(interval) || interval < 1 || interval > 60) {
+      showError("刷新间隔必须在1-60秒之间");
+      $(this).val(AUTO_REFRESH_INTERVAL / 1000);
+      return;
+    }
+
+    AUTO_REFRESH_INTERVAL = interval * 1000;
+
+    // 保存到localStorage
+    localStorage.setItem('refreshInterval', interval);
+
+    if (autoRefreshEnabled) {
+      startAutoRefresh();
+      showSuccess(`刷新间隔已更新为 ${interval} 秒`);
+    }
+  });
+
+  // 启动自动刷新
+  // 从 localStorage 恢复设置
+  const savedAutoRefresh = localStorage.getItem('autoRefreshEnabled');
+  if (savedAutoRefresh !== null) {
+    autoRefreshEnabled = savedAutoRefresh === 'true';
+    $("#autoRefreshToggle").prop('checked', autoRefreshEnabled);
+  }
+
+  const savedInterval = localStorage.getItem('refreshInterval');
+  if (savedInterval && !isNaN(parseInt(savedInterval))) {
+    AUTO_REFRESH_INTERVAL = parseInt(savedInterval) * 1000;
+    $("#refreshInterval").val(savedInterval);
+  }
+
+  startAutoRefresh();
 
   // 对话框拖动功能
   let isDragging = false;
