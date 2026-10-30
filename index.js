@@ -285,11 +285,20 @@ function refreshFolderUI(path) {
 
     // 2. 如果已展开，刷新子列表内容
     if ($expand.text() === "-") {
-      // 收集当前所有选中项（包含本文件夹下的和子文件夹下的）
+      // 收集当前所有选中的路径
       const selectedPaths = [];
       selectArray.forEach(selectedPath => {
         if (selectedPath.startsWith(path + seperator) || selectedPath === path) {
           selectedPaths.push(selectedPath);
+        }
+      });
+
+      // 收集所有已展开的子文件夹路径
+      const expandedPaths = [];
+      $parentLi.find("> ul .expand").each(function() {
+        if ($(this).text() === "-") {
+          const childPath = decodeURIComponent($(this).attr("path"));
+          expandedPaths.push(childPath);
         }
       });
 
@@ -311,15 +320,24 @@ function refreshFolderUI(path) {
         }
       });
 
-      // 更新选中序号显示
-      updateSelectionIndices(target);
-
-      // 3. 递归刷新所有已展开的子文件夹
-      children.forEach((child) => {
-        if (child.isDir) {
-          refreshFolderUI(child.path);
+      // 恢复子文件夹的展开状态
+      expandedPaths.forEach(expandedPath => {
+        const encodedPath = encodeURIComponent(expandedPath);
+        const $expandItem = $(containerClass + ` .item[path='${encodedPath}']`);
+        if ($expandItem.length > 0) {
+          const $expand = $expandItem.find('.expand');
+          if ($expand.length > 0) {
+            $expand.text('-');
+            // 立即展开并刷新该子文件夹
+            const $parentLi = $expandItem.closest('li');
+            const isSubInput = $parentLi.closest('.INPUT').length > 0;
+            refreshFolderUI(expandedPath);
+          }
         }
       });
+
+      // 更新选中序号显示
+      updateSelectionIndices(target);
     }
   });
 }
@@ -731,9 +749,20 @@ function executeRename() {
         hideLoading(loading);
         if (successCount > 0) {
           showSuccess(`成功重命名 ${successCount} 个项目`);
-          // 刷新界面
-          DomCreateing($(".INPUT"), INPUT);
-          DomCreateing($(".OUTPUT"), OUTPUT);
+
+          // 收集所有需要刷新的父目录路径
+          const pathsToRefresh = new Set();
+          selectedPaths.forEach(path => {
+            const parentPath = path.substring(0, path.lastIndexOf(seperator));
+            if (parentPath) {
+              pathsToRefresh.add(parentPath);
+            }
+          });
+
+          // 刷新所有受影响的父目录
+          pathsToRefresh.forEach(path => {
+            refreshFolderUI(path);
+          });
           // 清空选择
           inputSelect = [];
           outputSelect = [];
@@ -819,6 +848,59 @@ function toggleAutoRefresh(enabled) {
 }
 
 function staticDomEventBind() {
+  // 根目录展开/收起切换按钮
+  $(".toggleRootFolders").on("click", function () {
+    // 检查输入列表和输出列表的根目录状态
+    const $inputRootItems = $(".INPUT > ul > li.folder");
+    const $outputRootItems = $(".OUTPUT > ul > li.folder");
+
+    let inputExpandedCount = 0;
+    let outputExpandedCount = 0;
+
+    $inputRootItems.each(function() {
+      const $expand = $(this).find("> div > .expand");
+      if ($expand.text() === "-") {
+        inputExpandedCount++;
+      }
+    });
+
+    $outputRootItems.each(function() {
+      const $expand = $(this).find("> div > .expand");
+      if ($expand.text() === "-") {
+        outputExpandedCount++;
+      }
+    });
+
+    const totalRootItems = $inputRootItems.length + $outputRootItems.length;
+    const totalExpanded = inputExpandedCount + outputExpandedCount;
+
+    // 如果大部分已经展开，则收起；否则展开
+    const shouldExpand = totalExpanded < totalRootItems / 2;
+
+    // 对输入列表操作
+    $inputRootItems.each(function() {
+      const $expand = $(this).find("> div > .expand");
+      if (shouldExpand && $expand.text() === "+") {
+        $expand.click();
+      } else if (!shouldExpand && $expand.text() === "-") {
+        $expand.click();
+      }
+    });
+
+    // 对输出列表操作
+    $outputRootItems.each(function() {
+      const $expand = $(this).find("> div > .expand");
+      if (shouldExpand && $expand.text() === "+") {
+        $expand.click();
+      } else if (!shouldExpand && $expand.text() === "-") {
+        $expand.click();
+      }
+    });
+
+    const action = shouldExpand ? "展开" : "收起";
+    showSuccess(`已${action}所有根目录`);
+  });
+
   // 点击上传 - 输入列表
   $(".input-list-title").on("click", function () {
     const target = "INPUT";

@@ -25,20 +25,29 @@
           <button class="moveToOutput">移动 →</button>
         </div>
       </div>
-      <button class="refreshAll" title="刷新所有已展开的文件夹">🔄 刷新全部</button>
+      <button class="refreshAll" title="刷新所有已展开的文件夹">
+        🔄 刷新全部
+      </button>
       <div class="auto-refresh-control">
         <div class="auto-refresh-toggle">
-        <label class="switch">
-          <input type="checkbox" id="autoRefreshToggle" checked>
-          <span class="slider"></span>
-        </label>
-        <span class="label-text">自动刷新</span>
-      </div>
-      <div class="refresh-interval-setting">
-        <label>间隔:</label>
-        <input type="number" id="refreshInterval" value="5" min="1" max="60" step="1">
-        <span>秒</span>
-      </div>
+          <label class="switch">
+            <input type="checkbox" id="autoRefreshToggle" checked />
+            <span class="slider"></span>
+          </label>
+          <span class="label-text">自动刷新</span>
+        </div>
+        <div class="refresh-interval-setting">
+          <label>间隔:</label>
+          <input
+            type="number"
+            id="refreshInterval"
+            value="5"
+            min="1"
+            max="60"
+            step="1"
+          />
+          <span>秒</span>
+        </div>
       </div>
       <button class="resetAll" style="color: gray">取消所有选中</button>
       <button class="openDir">在资源管理器中打开</button>
@@ -52,6 +61,9 @@
           <button class="moveToInput">← 移动</button>
         </div>
       </div>
+      <button class="toggleRootFolders" title="收起/展开根目录">
+        📂根目录
+      </button>
     </div>
 
     <div class="outputArea">

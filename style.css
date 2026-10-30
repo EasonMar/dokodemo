@@ -204,7 +204,7 @@ ul .item:hover {
   right: 0;
   bottom: 0;
   background-color: #ccc;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 20px;
 }
 
@@ -216,7 +216,7 @@ ul .item:hover {
   left: 2px;
   bottom: 2px;
   background-color: white;
-  transition: .4s;
+  transition: 0.4s;
   border-radius: 50%;
 }
 
@@ -276,6 +276,16 @@ input:checked + .slider:before {
 .inputBtn .refresh-btn:hover,
 .outputBtn .refresh-btn:hover {
   background: #138496;
+}
+
+.toggleRootFolders {
+  background: #2f4eb7;
+  color: white;
+  border-color: #2f4eb7;
+}
+
+.toggleRootFolders:hover {
+  background: #4a67c6;
 }
 
 .file-actions {
